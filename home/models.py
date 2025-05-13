@@ -97,3 +97,13 @@ class BorrowedBook(models.Model):
 
   def __str__(self):
     return f"{self.member} borrowed {self.book}"
+
+
+class FavouriteBooks(models.Model):
+  member = models.ForeignKey(Members, on_delete=models.CASCADE)
+  book = models.ForeignKey(Books, on_delete=models.CASCADE)
+
+
+class OwnedBooks(models.Model):
+  member = models.ForeignKey(Members, on_delete=models.CASCADE)
+  book = models.ForeignKey(Books, on_delete=models.CASCADE)
