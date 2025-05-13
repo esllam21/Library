@@ -377,6 +377,7 @@ def borrowBook(request, book_id):
       user_email = request.session.get('user_email')
       member = get_object_or_404(Members, email=user_email)
       book = get_object_or_404(Books, id=book_id)
+      borrowed_books = BorrowedBook.objects.filter(member=member, returned=False)
 
       # Check if already borrowed
       already_borrowed = BorrowedBook.objects.filter(member=member, book=book, returned=False).exists()
@@ -397,7 +398,7 @@ def borrowBook(request, book_id):
         messages.warning(request, "You already borrowed this book.")
       return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
     else:
-      return redirect('/home/login/')
+      return render(request, 'Home.html')
   return redirect(request.META.get('HTTP_REFERER', '#'))
 
 from django.db.models import Q

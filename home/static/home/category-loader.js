@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookImage = bookCard.querySelector('img').src;
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
+    const bookDes= bookCard.querySelector('.book-des').textContent;
 
     // Get rating if available, otherwise use placeholder
     let bookRating = "N/A";
@@ -546,6 +547,8 @@ document.addEventListener('DOMContentLoaded', function() {
                   <div class="book-price">${borrowPrice}</div>
                   <div class="buy-price">${buyPrice}</div>
                 </div>
+                <div class="book-des" style="display: none;">${book.description||' default:"No description available." '}</div>
+
               </div>
       
     `;

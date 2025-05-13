@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookImage = bookCard.querySelector('img').src;
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
+    const bookDes=bookCard.querySelector('.book-des').textContent;
     
     // Get rating if available, otherwise use placeholder
     let bookRating = "N/A";
@@ -146,6 +147,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="category">${bookCategory}</div>
         <div class="rating">${stars}</div>
         <div class="meta">Author: ${bookAuthor}</div>
+        <div class="meta"> ${bookDes}</div>
         
         <div class="meta-row">
           <span class="meta">${pages} Pages</span>
@@ -156,7 +158,6 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="meta">Borrow: ${borrowPrice}</div>
         <div class="meta">Purchase: ${buyPrice}</div>
         
-        <p>Click on the buttons below to borrow or buy this book!</p>
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
           <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee;">Borrow</button>
           <button class="profile-buy-btn" style="flex: 1; background-color: #10b981;">Buy</button>

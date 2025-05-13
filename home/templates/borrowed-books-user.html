@@ -99,7 +99,7 @@
                     {% endif %}
                     <div class="action-buttons">
                       <a href="/home/return/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('return-form-{{ borrow.book.id }}').submit();">
-                        <button class="borrow-btn">Return</button>
+                        <button class="return-btn">Return</button>
                       </a>
                       <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
                         <button class="buy-btn">Buy</button>
@@ -137,6 +137,7 @@
                     <div class="book-prices">
                       <div class="book-price">Borrowed: {{ borrow.borrowed_date|date:"M d, Y" }}</div>
                     </div>
+                    <div class="book-des" style="display: none;">{{ borrow.book.description|default:"No description available." }}</div>
                   </div>
                 </div>
               {% endfor %}
@@ -193,6 +194,7 @@
                     <div class="book-prices">
                       <div class="book-price">Purchased: {{ owned.purchase_date|date:"M d, Y" }}</div>
                     </div>
+                    <div class="book-des" style="display: none;">{{ owned.book.description|default:"No description available." }}</div>
                   </div>
                 </div>
               {% endfor %}
@@ -208,7 +210,7 @@
     <div class="profile-box"></div>
   </div>
 
-  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/borrowed-books-user.js' %}"></script>
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
   <script>

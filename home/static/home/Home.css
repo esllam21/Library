@@ -121,7 +121,7 @@ body {
   opacity: 1;
 }
 
-.borrow-btn, .buy-btn {
+.borrow-btn, .buy-btn, .return-btn {
   color: white;
   border: none;
   padding: 8px 12px;
@@ -143,7 +143,8 @@ body {
 }
 
 .book-card:hover .borrow-btn, 
-.book-card:hover .buy-btn {
+.book-card:hover .buy-btn,
+.book-card:hover .return-btn{
   transform: translateY(0) scale(1);
   opacity: 1;
 }
@@ -165,6 +166,14 @@ body {
 .buy-btn:hover {
   background-color: #059669;
   box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4);
+}
+.return-btn {
+  background-color: #ff5151;
+  box-shadow: 0 4px 10px rgba(255, 81, 81, 0.3);
+}
+.return-btn:hover{
+  background-color: #e64848;
+  box-shadow: 0 6px 15px rgba(230, 72, 72, 0.4);
 }
 
 .book-card:hover .book-card-img img {
