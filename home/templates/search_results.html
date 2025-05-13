@@ -3,7 +3,7 @@
 {% load static %}
 <head>
   <meta charset="UTF-8">
-  <title>BookBase</title>
+  <title>Search Results - BookBase</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     <h2 class="logo">ReadIT</h2>
     <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
     <div class="search-input">
-      <input type="text" placeholder="Search your favourite books...">
+      <input type="text" id="search-input" placeholder="Search your favourite books..." value="{{ query }}">
     </div>
     <div class="profile">
       <span class="notification"><i class="ph ph-bell"></i></span>
@@ -42,7 +42,7 @@
     <!-- Left: Sidebar -->
     <div class="sidebar">
       <ul>
-        <li class="active" id="home-btn">
+        <li id="home-btn">
           <span class="icon-wrapper"><i class="ph ph-house"></i></span>
           <span class="label">Discover</span>
         </li>
@@ -56,7 +56,7 @@
         </li>
         <li id="favourites-btn">
           <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
-          <span class="label">Favourites</span>
+          <span class="label">Favourite</span>
         </li>
         <div style="height: 20px;"></div>
 
@@ -74,20 +74,25 @@
         </li>
       </ul>
     </div>
+
     <!-- Middle: Main Content -->
     <div class="content-wrapper">
-      <!-- 🔸 MAIN CONTENT -->
+      <!-- Main Content -->
       <div class="main">
-      {% if is_logged_in and has_recommendations %}
-      <div class="featured">
+        <div class="featured">
           <div class="section-header">
-            <h3>Recommended for You</h3>
-            <a href="/home/categories/" class="see-all-btn">See All <i class="ph ph-arrow-right"></i></a>
+            <h3>Search Results for "{{ query }}"</h3>
+            <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
           </div>
-          <div class="books-row">
-            {% for book in recommended_books %}
-              {% if book.stock != 0 %}
+          
+          {% if books %}
+            <div class="books-row">
+              {% for book in books %}
+
                 <div class="book-card"
+                  {% if book.stock == 0 %}
+                    class="out-of-stock"
+                  {% endif %}
                      data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
                      data-pages="{{ book.pageCount }}"
                      data-rating-count="{{ book.ratingCount|default:'0' }}">
@@ -105,7 +110,7 @@
                         <button class="buy-btn">Buy</button>
                       </a>
                     </div>
-                    <form id="borrow-form-{{ book.id }}" action="/home/borrow/{{ book.id }}/" method="post" style="display: none;">
+                    <form id="borrow-form-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
                     <form id="buy-form-{{ book.id }}" action="{% url 'buyBook' book.id %}" method="post" style="display: none;">
@@ -140,108 +145,19 @@
                     </div>
                   </div>
                 </div>
-              {% endif %}
-            {% endfor %}
-          </div>
-      </div>
-      {% endif %}
-      
-      <div class="featured">
-          <div class="section-header">
-            <h3>Discover</h3>
-            <a href="/home/categories/" class="see-all-btn">See All <i class="ph ph-arrow-right"></i></a>
-          </div>
-          <div class="books-row">
-            {% if books %}
-              {% for book in books %}
-                {% if book.stock != 0 %}
-                  <div class="book-card"
-                       data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
-                       data-pages="{{ book.pageCount }}"
-                       data-rating-count="{{ book.ratingCount|default:'0' }}">
-                    <div class="book-card-img">
-                      {% if book.image %}
-                        <img src="{{ book.image.url }}" alt="{{ book.title }}">
-                      {% else %}
-                        <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
-                      {% endif %}
-                      <div class="action-buttons">
-                        <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-discover-{{ book.id }}').submit();">
-                          <button class="borrow-btn">Borrow</button>
-                        </a>
-                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-discover-{{ book.id }}').submit();">
-                          <button class="buy-btn">Buy</button>
-                        </a>
-                      </div>
-                      <form id="borrow-form-discover-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
-                        {% csrf_token %}
-                      </form>
-                      <form id="buy-form-discover-{{ book.id }}" action="{% url 'buyBook' book.id %}" method="post" style="display: none;">
-                        {% csrf_token %}
-                      </form>
-                    </div>
-                    <div class="book-card-content">
-                      <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
-                        <span class="book-title">{{ book.title }}</span>
-                      {% if book.id in favorite_book_ids %}
-                      <i class="ph-fill ph-heart-straight" style="color: red;"
-                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
-                      {% else %}
-                      <i class="ph ph-heart-straight"
-                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
-                      {% endif %}
-                      </div>
-                      <form id="favorite-form-discover-{{ book.id }}" action="{% url 'addFavorite' book.id %}"
-                            method="post" style="display: none;">
-                        {% csrf_token %}
-                      </form>
-                      <div class="book-info">
-                        <span class="book-author">{{ book.author }}</span>
-                        <div class="book-rating">
-                          <i class="ph ph-star-fill"></i>
-                          <span>{{ book.rating|default:"N/A" }}</span>
-                        </div>
-                      </div>
-                      <div class="book-prices">
-                        <div class="book-price">${{ book.borrowPrice }}</div>
-                        <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
-                      </div>
-                    </div>
-                  </div>
-                {% endif %}
-              {% endfor %}
-            {% else %}
-              <div class="no-books">No books available at the moment.</div>
-            {% endif %}
-          </div>
-        </div>
-                        <!-- Categories Section -->
-      <div class="categories-section">
-        <div class="section-header">
-          <h3>Categories</h3>
-                                  <a href="/home/categories/" class="see-all-btn">See All <i class="ph ph-arrow-right"></i></a>
-        </div>
-        <div class="tags-container">
-          <div class="tags">
-            <div class="tag active" data-category-id="all">All</div>
-              {% for category in categories %}
-                <div class="tag" data-category-id="{{ category.id }}">{{ category.name }}</div>
               {% endfor %}
             </div>
-          </div>
-
-          <div id="category-books-container" class="books-row category-books category-fade-in">
-            <div class="loading-spinner">
-              <div class="spinner"></div>
-                 <p>Loading books...</p>
-              </div>
+          {% else %}
+            <div class="empty-state">
+              <i class="ph ph-book-bookmark" style="font-size: 64px; color: #ccc;"></i>
+              <p>No books found matching "{{ query }}".</p>
+              <a href="{% url 'categories' %}" class="btn-explore">Explore Categories</a>
             </div>
-          </div>
+          {% endif %}
         </div>
       </div>
-                
-
-
+    </div>
+    
     <!-- Right: Profile Box -->
     <div class="profile-box"></div>
   </div>
@@ -250,9 +166,40 @@
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
   <script>
-    // Make favorite book IDs available to JavaScript
-    window.favorite_book_ids = {{ favorite_book_ids|safe }};
+    document.addEventListener('DOMContentLoaded', function() {
+      // Make favorite book IDs available to JavaScript
+      window.favorite_book_ids = {{ favorite_book_ids|safe }};
+      
+      // Handle search input
+      const searchInput = document.getElementById('search-input');
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          window.location.href = `/home/search/?q=${encodeURIComponent(this.value)}`;
+        }
+      });
+      
+      // Navigation via sidebar
+      document.getElementById('home-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'homepage' %}";
+      });
+
+      document.getElementById('categories-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'categories' %}";
+      });
+
+      document.getElementById('borrowed-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'borrowedBooks' %}";
+      });
+
+      document.getElementById('favourites-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'favorites' %}";
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'logout' %}";
+      });
+    });
   </script>
-  <script src="{% static 'home/category-loader.js' %}"></script>
 </body>
 </html>

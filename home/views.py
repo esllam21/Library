@@ -9,6 +9,9 @@ from django.db.models import Count
 from collections import Counter
 
 
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect
+
 def categoriesPage(request):
   """View to display all categories and their books"""
   # Get all categories ordered by name
@@ -357,6 +360,38 @@ def borrowBook(request, book_id):
     else:
       return redirect('/home/login/')
   return redirect(request.META.get('HTTP_REFERER', '#'))
+
+from django.db.models import Q
+
+def search_books(request):
+    query = request.GET.get('q', '')
+    
+    if query:
+        # Search for books matching the query in title or author
+        books = Books.objects.filter(
+            Q(title__icontains=query) | 
+            Q(author__icontains=query)
+        ).distinct()
+        
+        # Get favorite books if user is logged in
+        favorite_book_ids = []
+        if request.session.get('is_logged_in'):
+            user_email = request.session.get('user_email')
+            member = get_object_or_404(Members, email=user_email)
+            favorite_book_ids = list(FavouriteBooks.objects.filter(member=member).values_list('book_id', flat=True))
+        
+        return render(request, 'search_results.html', {
+            'books': books,
+            'query': query,
+            'favorite_book_ids': favorite_book_ids,
+            'is_logged_in': request.session.get('is_logged_in', False),
+            'username': request.session.get('username', ''),
+            'user_image': request.session.get('user_image', ''),
+            'stock': request.session.get('stock', ''),
+        })
+    else:
+        # If no query provided, redirect to home
+        return redirect('/home/homePage/')
 
 
 def buyBook(request, book_id):
