@@ -593,24 +593,33 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    buyBtn.addEventListener('click', function() {
+    buyBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
       // Check if user is logged in
       const isLoggedIn = document.body.getAttribute('data-logged-in') === 'true';
       if (isLoggedIn) {
+        // Check if a form already exists for this book
+        const existingForm = document.getElementById(`buy-form-discover-${book.id}`);
+        if (existingForm) {
+          existingForm.submit();
+          return;
+        }
+        
         // Create a form and submit it to buy the book
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/home/buy/${book.id}/`;
-
+        form.id = `dynamic-buy-form-${book.id}`;
+        form.style.display = 'none';
+    
         // Add CSRF token
-        const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
-        if (csrfToken) {
-          const csrfInput = document.createElement('input');
-          csrfInput.type = 'hidden';
-          csrfInput.name = 'csrfmiddlewaretoken';
-          csrfInput.value = csrfToken.value;
-          form.appendChild(csrfInput);
-        }
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = getCsrfToken();
+        form.appendChild(csrfInput);
 
         document.body.appendChild(form);
         form.submit();

@@ -108,7 +108,7 @@
                     <form id="borrow-form-{{ book.id }}" action="/home/borrow/{{ book.id }}/" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
-                    <form id="buy-form-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
+                    <form id="buy-form-{{ book.id }}" action="{% url 'buyBook' book.id %}" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
                   </div>
@@ -176,7 +176,7 @@
                       <form id="borrow-form-discover-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
                         {% csrf_token %}
                       </form>
-                      <form id="buy-form-discover-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
+                      <form id="buy-form-discover-{{ book.id }}" action="{% url 'buyBook' book.id %}" method="post" style="display: none;">
                         {% csrf_token %}
                       </form>
                     </div>

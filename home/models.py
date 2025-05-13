@@ -112,7 +112,8 @@ class FavouriteBooks(models.Model):
 class OwnedBooks(models.Model):
   member = models.ForeignKey(Members, on_delete=models.CASCADE)
   book = models.ForeignKey(Books, on_delete=models.CASCADE)
+  purchase_date = models.DateTimeField(auto_now_add=True)
 
 
   def __str__(self):
-    return f"{self.member} favourite {self.book}"
+    return f"{self.member} owns {self.book}"

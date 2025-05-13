@@ -363,22 +363,32 @@ def buyBook(request, book_id):
             member = get_object_or_404(Members, email=user_email)
             book = get_object_or_404(Books, id=book_id)
 
+            # Check if already owned
+            already_owned = OwnedBooks.objects.filter(member=member, book=book).exists()
+            if already_owned:
+                messages.info(request, f"You already own '{book.title}'.")
+                return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+
             if book.stock > 0:
-                # We don't create a BorrowedBook record because the book is purchased, not borrowed
-                
+                # Create an OwnedBooks record for this purchase
+                OwnedBooks.objects.create(member=member, book=book)
+                book.count = (book.count or 0) + 1
                 # Update stock
+
                 book.stock -= 1
                 book.save()
 
-                # In a real system, you would process payment and create a purchase record
+                # In a real system, you would process payment
                 # For this demo, we'll just show a success message
                 messages.success(request, f"You purchased '{book.title}' successfully for ${book.buyPrice or book.calculated_buy_price}.")
             else:
                 messages.error(request, f"Sorry, '{book.title}' is out of stock.")
-            return redirect('/home/availableBooks/')
+            
+            # Redirect back to the page they came from
+            return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
         else:
             return redirect('/home/login/')
-    return redirect('/home/availableBooks/')
+    return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
 
 @require_POST
 def addFavorite(request, book_id):

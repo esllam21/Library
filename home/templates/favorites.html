@@ -109,7 +109,7 @@
                     <form id="borrow-form-{{ favorite.book.id }}" action="{% url 'borrowBook' favorite.book.id %}" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
-                    <form id="buy-form-{{ favorite.book.id }}" action="/home/buy/{{ favorite.book.id }}/" method="post" style="display: none;">
+                    <form id="buy-form-{{ favorite.book.id }}" action="{% url 'buyBook' favorite.book.id %}" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
                   </div>
