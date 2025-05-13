@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Members, Books, BorrowedBook, Category
+from .models import Members, Books, BorrowedBook, Category, FavouriteBooks, OwnedBooks
+
 
 class BooksAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'borrowPrice', 'buyPrice', 'stock', 'get_category')
@@ -37,7 +38,16 @@ class BorrowedBookAdmin(admin.ModelAdmin):
     list_filter = ('returned', 'borrowed_date')
     search_fields = ('member__username', 'book__title')
 
+class FavouriteBooksAdmin(admin.ModelAdmin):
+    list_display = ('book', 'member')
+
+class OwnedBooksAdmin(admin.ModelAdmin):
+    list_display = ('book', 'member')
+
+
 admin.site.register(Members)
 admin.site.register(Books, BooksAdmin)
 admin.site.register(BorrowedBook, BorrowedBookAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(FavouriteBooks, FavouriteBooksAdmin)
+admin.site.register(OwnedBooks, OwnedBooksAdmin)

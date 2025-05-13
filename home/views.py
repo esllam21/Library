@@ -563,6 +563,17 @@ def filter_books_by_category(request, category_id=None):
                 # return an empty list
                 books = []
 
+        # Get favorite books if user is logged in
+        favorite_book_ids = []
+        if request.session.get('is_logged_in'):
+            try:
+                user_email = request.session.get('user_email')
+                member = Members.objects.get(email=user_email)
+                favorite_book_ids = list(FavouriteBooks.objects.filter(member=member).values_list('book_id', flat=True))
+            except:
+                # If there's an error, just continue without favorites
+                pass
+
         # Prepare the data for JSON response
         books_data = []
         for book in books:
@@ -572,6 +583,9 @@ def filter_books_by_category(request, category_id=None):
 
             # Get category name
             category_name = book.get_category or "Uncategorized"
+
+            # Check if this book is in user's favorites
+            is_favorite = book.id in favorite_book_ids
 
             books_data.append({
                 'id': book.id,
@@ -583,12 +597,14 @@ def filter_books_by_category(request, category_id=None):
                 'buyPrice': float(book.buyPrice) if book.buyPrice else 0,
                 'category': category_name,
                 'pageCount': book.pageCount,
-                'ratingCount': book.ratingCount or 0
+                'ratingCount': book.ratingCount or 0,
+                'is_favorite': is_favorite
             })
 
         return JsonResponse({
             'success': True,
-            'books': books_data
+            'books': books_data,
+            'is_logged_in': request.session.get('is_logged_in', False)
         })
 
     except Exception as e:

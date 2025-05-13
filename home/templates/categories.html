@@ -11,9 +11,10 @@
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   {% csrf_token %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
 
 </head>
-<body data-logged-in="{{ is_logged_in|lower }}">
+<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}">
   <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
@@ -112,7 +113,6 @@
     <div class="profile-box"></div>
 
   </div>
-
   <script src="{% static 'home/home.js' %}"></script>
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>

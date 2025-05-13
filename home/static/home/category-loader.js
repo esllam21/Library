@@ -126,7 +126,178 @@ document.addEventListener("DOMContentLoaded", function() {
     // Get prices
     const borrowPrice = bookCard.querySelector('.book-price')?.textContent || "$0.00";
     const buyPrice = bookCard.querySelector('.buy-price')?.textContent || "$0.00";
-
+document.addEventListener('DOMContentLoaded', function() {
+    const tagsContainer = document.querySelector('.tags-container');
+    const categoryBooksContainer = document.getElementById('category-books-container');
+    
+    if (tagsContainer && categoryBooksContainer) {
+        const tags = tagsContainer.querySelectorAll('.tag');
+        
+        // Get favorite book IDs from the data attribute
+        const favoriteBookIds = [];
+        if (document.body.hasAttribute('data-favorite-book-ids')) {
+            try {
+                const favoriteIdsStr = document.body.getAttribute('data-favorite-book-ids');
+                if (favoriteIdsStr) {
+                    favoriteIdsStr.split(',').forEach(id => {
+                        if (id && !isNaN(parseInt(id))) {
+                            favoriteBookIds.push(parseInt(id));
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error parsing favorite book IDs:', e);
+            }
+        }
+        
+        // Set active tag and load books
+        tags.forEach(tag => {
+            tag.addEventListener('click', function() {
+                // Remove active class from all tags
+                tags.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tag
+                this.classList.add('active');
+                
+                // Get category ID from data attribute
+                const categoryId = this.getAttribute('data-category-id');
+                
+                // Show loading spinner
+                categoryBooksContainer.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading books...</p>
+                    </div>
+                `;
+                
+                // Fetch books for selected category
+                fetchBooksByCategory(categoryId);
+            });
+        });
+        
+        // Load initial books (all categories)
+        fetchBooksByCategory('all');
+        
+        // Function to fetch books by category
+        function fetchBooksByCategory(categoryId) {
+            fetch(`/home/api/books-by-category/${categoryId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayBooks(data.books);
+                    } else {
+                        categoryBooksContainer.innerHTML = `
+                            <div class="error-message">
+                                <p>Error loading books: ${data.error || 'Unknown error'}</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching books:', error);
+                    categoryBooksContainer.innerHTML = `
+                        <div class="error-message">
+                            <p>Error loading books. Please try again later.</p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // Function to display books
+        function displayBooks(books) {
+            if (!books || books.length === 0) {
+                categoryBooksContainer.innerHTML = `
+                    <div class="no-books-message">
+                        <p>No books found in this category.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            books.forEach(book => {
+                const isFavorite = favoriteBookIds.includes(book.id);
+                const heartClass = isFavorite ? 'ph-heart-fill favorite-active' : 'ph-heart-straight';
+                
+                html += `
+                    <div class="book-card" 
+                         data-category="${book.category || 'Uncategorized'}"
+                         data-pages="${book.pageCount || 0}"
+                         data-rating-count="${book.ratingCount || 0}">
+                        <div class="book-card-img">
+                            <img src="${book.image}" alt="${book.title}">
+                            <div class="action-buttons">
+                                <a href="/home/borrow/${book.id}/" onclick="event.preventDefault(); document.getElementById('borrow-form-cat-${book.id}').submit();">
+                                    <button class="borrow-btn">Borrow</button>
+                                </a>
+                                <a href="/home/buy/${book.id}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-${book.id}').submit();">
+                                    <button class="buy-btn">Buy</button>
+                                </a>
+                            </div>
+                            <form id="borrow-form-cat-${book.id}" action="/home/borrow/${book.id}/" method="post" style="display: none;">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+                            </form>
+                            <form id="buy-form-cat-${book.id}" action="/home/buy/${book.id}/" method="post" style="display: none;">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+                            </form>
+                        </div>
+                        <div class="book-card-content">
+                            <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                                <span class="book-title">${book.title}</span>
+                                <i class="ph ${heartClass}"
+                                   onclick="event.preventDefault(); document.getElementById('favorite-form-cat-${book.id}').submit();"></i>
+                            </div>
+                            <form id="favorite-form-cat-${book.id}" action="/home/add-favorite/${book.id}/" method="post" style="display: none;">
+                                <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+                            </form>
+                            <div class="book-info">
+                                <span class="book-author">${book.author}</span>
+                                <div class="book-rating">
+                                    <i class="ph ph-star-fill"></i>
+                                    <span>${book.rating || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div class="book-prices">
+                                <div class="book-price">$${book.borrowPrice.toFixed(2)}</div>
+                                <div class="buy-price">$${book.buyPrice.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            categoryBooksContainer.innerHTML = html;
+            
+            // Apply fade-in animation
+            setTimeout(() => {
+                categoryBooksContainer.classList.add('category-fade-in');
+            }, 100);
+        }
+        
+        // Function to get CSRF token
+        function getCsrfToken() {
+            const cookieValue = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='))
+                ?.split('=')[1];
+            
+            if (cookieValue) {
+                return cookieValue;
+            }
+            
+            // Fallback - try to get from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrfToken) {
+                return csrfToken;
+            }
+            
+            // If no token found, log error and return empty string
+            console.error('CSRF token not found!');
+            return '';
+        }
+    }
+});
     // Create star rating display
     let stars = "";
     if (bookRating !== "N/A") {
@@ -268,6 +439,33 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     }, 300); // Match this timing with CSS transition duration
   }
+  // Function to get CSRF token
+  function getCsrfToken() {
+    const cookieValue = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+    
+    if (cookieValue) {
+      return cookieValue;
+    }
+    
+    // Fallback - try to get from meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) {
+      return csrfToken;
+    }
+    
+    // If no token found, try to get from any existing form
+    const existingToken = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (existingToken) {
+      return existingToken.value;
+    }
+    
+    console.error('CSRF token not found!');
+    return '';
+  }
+  
   function createBookCard(book) {
     // Create a new book card element
     const bookCard = document.createElement('div');
@@ -313,7 +511,15 @@ document.addEventListener("DOMContentLoaded", function() {
         </div>
       </div>
       <div class="book-card-content">
-        <div class="book-title">${book.title}</div>
+        <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+          <span class="book-title">${book.title}</span>
+          <i class="ph ph-heart-straight"
+             onclick="event.preventDefault(); document.getElementById('favorite-form-discover-${book.id}').submit();"></i>
+        </div>
+        <form id="favorite-form-discover-${book.id}" action="/home/add-favorite/${book.id}/" 
+              method="post" style="display: none;">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+        </form>
         <div class="book-info">
           <span class="book-author">${book.author}</span>
           <div class="book-rating">

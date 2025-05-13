@@ -1,20 +1,22 @@
 from django.db import models
 
-
 from django.db import models
+
 
 class Category(models.Model):
   name = models.CharField(max_length=255, unique=True)
   description = models.TextField(blank=True, null=True)
-  
+
   def __str__(self):
     return self.name
-    
+
   class Meta:
     verbose_name_plural = "Categories"
 
+
 import random
 from decimal import Decimal
+
 
 class Books(models.Model):
   title = models.CharField(max_length=255)
@@ -36,21 +38,21 @@ class Books(models.Model):
 
   def __str__(self):
     return self.title
-    
+
   @property
   def get_image_url(self):
     """Return image URL or a default placeholder if image is missing"""
     if self.image and hasattr(self.image, 'url'):
       return self.image.url
     return "https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image"
-    
+
   @property
   def get_category(self):
     """Return category name, prioritizing the relationship field"""
     if self.book_category:
       return self.book_category.name
     return self.category
-    
+
   @property
   def calculated_buy_price(self):
     """Calculate buy price based on borrow price + random value"""
@@ -61,7 +63,7 @@ class Books(models.Model):
         return self.borrowPrice + Decimal(random_addition)
       return self.buyPrice
     return Decimal('0.00')
-    
+
   def save(self, *args, **kwargs):
     # Auto-calculate buyPrice if it's not already set
     if self.borrowPrice and not self.buyPrice:
@@ -103,7 +105,14 @@ class FavouriteBooks(models.Model):
   member = models.ForeignKey(Members, on_delete=models.CASCADE)
   book = models.ForeignKey(Books, on_delete=models.CASCADE)
 
+  def __str__(self):
+    return f"{self.member} favourite {self.book}"
+
 
 class OwnedBooks(models.Model):
   member = models.ForeignKey(Members, on_delete=models.CASCADE)
   book = models.ForeignKey(Books, on_delete=models.CASCADE)
+
+
+  def __str__(self):
+    return f"{self.member} favourite {self.book}"

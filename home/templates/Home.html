@@ -172,7 +172,15 @@
                     </form>
                   </div>
                   <div class="book-card-content">
-                    <div class="book-title">{{ book.title }}</div>
+                    <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                      <span class="book-title">{{ book.title }}</span>
+                      <i class="ph ph-heart-straight"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-discover-{{ book.id }}').submit();"></i>
+                    </div>
+                    <form id="favorite-form-discover-{{ book.id }}" action="{% url 'addFavorite' book.id %}"
+                          method="post" style="display: none;">
+                      {% csrf_token %}
+                    </form>
                     <div class="book-info">
                       <span class="book-author">{{ book.author }}</span>
                       <div class="book-rating">
