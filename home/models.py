@@ -1,6 +1,6 @@
 from django.db import models
-
-from django.db import models
+import random
+from decimal import Decimal
 
 
 class Category(models.Model):
@@ -14,8 +14,6 @@ class Category(models.Model):
     verbose_name_plural = "Categories"
 
 
-import random
-from decimal import Decimal
 
 
 class Books(models.Model):
