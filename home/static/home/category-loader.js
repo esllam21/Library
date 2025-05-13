@@ -43,8 +43,10 @@ document.addEventListener("DOMContentLoaded", function() {
         if (data.success && data.books && data.books.length > 0) {
           // Create and append book cards
           data.books.forEach(book => {
+            // if(book.stock!==0){
             const bookCard = createBookCard(book);
             booksContainer.appendChild(bookCard);
+            // }
           });
           
           console.log(`Loaded ${data.books.length} books for category ${categoryId}`);
@@ -515,38 +517,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up the inner HTML of the book card
     bookCard.innerHTML = `
-      <div class="book-card-img">
-        <img src="${book.image}" alt="${book.title}">
-        <div class="action-buttons">
-          <button class="borrow-btn">Borrow</button>
-          <button class="buy-btn">Buy</button>
-        </div>
-      </div>
-      <div class="book-card-content">
-            <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
-              <span class="book-title">${book.title}</span>
-              <i class="${isFavorite(book.id,book) ? 'ph-fill ph-heart-straight' : 'ph ph-heart-straight'}"
-                 style="${isFavorite(book.id,book) ? 'color: red;' : ''}"
-                 onclick="event.preventDefault(); document.getElementById('favorite-form-discover-${book.id}').submit();"></i>
-            </div>
-            <form id="favorite-form-discover-${book.id}" action="/home/add-favorite/${book.id}/" 
-                  method="post" style="display: none;">
-              <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
-            </form>
-            <div class="book-info">
-              <span class="book-author">${book.author}</span>
-              <div class="book-rating">
-                <i class="ph ph-star-fill"></i>
-                <span>${book.rating.toFixed(1)}</span>
-              </div>
-            </div>
-            <div class="book-prices">
-              <div class="book-price">${borrowPrice}</div>
-              <div class="buy-price">${buyPrice}</div>
+          <div class="book-card-img">
+            <img src="${book.image}" alt="${book.title}">
+            <div class="action-buttons">
+              <button class="borrow-btn">Borrow</button>
+              <button class="buy-btn">Buy</button>
             </div>
           </div>
+          <div class="book-card-content">
+                <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                  <span class="book-title">${book.title}</span>
+                  <i class="${isFavorite(book.id,book) ? 'ph-fill ph-heart-straight' : 'ph ph-heart-straight'}"
+                     style="${isFavorite(book.id,book) ? 'color: red;' : ''}"
+                     onclick="event.preventDefault(); document.getElementById('favorite-form-discover-${book.id}').submit();"></i>
+                </div>
+                <form id="favorite-form-discover-${book.id}" action="/home/add-favorite/${book.id}/" 
+                      method="post" style="display: none;">
+                  <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+                </form>
+                <div class="book-info">
+                  <span class="book-author">${book.author}</span>
+                  <div class="book-rating">
+                    <i class="ph ph-star-fill"></i>
+                    <span>${book.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+                <div class="book-prices">
+                  <div class="book-price">${borrowPrice}</div>
+                  <div class="buy-price">${buyPrice}</div>
+                </div>
+              </div>
+      
     `;
-      if (book.stock == 0) {
+      if (book.stock === 0) {
           bookCard.style.opacity = "0.5";
           bookCard.querySelector('.borrow-btn').disabled = true;
           bookCard.querySelector('.buy-btn').disabled = true;

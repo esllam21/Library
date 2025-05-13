@@ -500,7 +500,8 @@ def all_filter_books_by_category(request, category_id=None):
                 'buyPrice': float(book.buyPrice) if book.buyPrice else 0,
                 'category': category_name,
                 'pageCount': book.pageCount,
-                'ratingCount': book.ratingCount or 0
+                'ratingCount': book.ratingCount or 0,
+                'stock' : book.stock
             })
         
         return JsonResponse({
@@ -598,7 +599,8 @@ def filter_books_by_category(request, category_id=None):
                 'category': category_name,
                 'pageCount': book.pageCount,
                 'ratingCount': book.ratingCount or 0,
-                'is_favorite': is_favorite
+                'is_favorite': is_favorite,
+                'stock': book.stock
             })
 
         return JsonResponse({
