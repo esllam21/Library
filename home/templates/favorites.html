@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <title>My Favorites - BookBase</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
+  {% csrf_token %}
+
+</head>
+<body data-logged-in="{{ is_logged_in|lower }}">
+  <!-- Top Navbar -->
+  <div class="navbar">
+    <h2 class="logo">ReadIT</h2>
+    <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
+    <div class="search-input">
+      <input type="text" placeholder="Search your favourite books...">
+    </div>
+    <div class="profile">
+      <span class="notification"><i class="ph ph-bell"></i></span>
+
+      {% if is_logged_in %}
+        <div class="user-profile">
+          <img src="{{ user_image }}" alt="{{ username }}">
+          <span class="username">{{ username }}</span>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="sign-in-btn">
+          <i class="ph ph-sign-in"></i>
+          <span>Sign In</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Layout: Sidebar + Content -->
+  <div class="main-content-area">
+    <!-- Left: Sidebar -->
+    <div class="sidebar">
+      <ul>
+        <li id="home-btn">
+          <span class="icon-wrapper"><i class="ph ph-house"></i></span>
+          <span class="label">Discover</span>
+        </li>
+        <li id="categories-btn">
+          <span class="icon-wrapper"><i class="ph ph-notebook"></i></span>
+          <span class="label">Category</span>
+        </li>
+        <li id="borrowed-btn">
+          <span class="icon-wrapper"><i class="ph ph-book-open"></i></span>
+          <span class="label">My Library</span>
+        </li>
+        <li class="active" id="favourites-btn">
+          <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
+          <span class="label">Favourite</span>
+        </li>
+        <div style="height: 20px;"></div>
+
+        <li id="settings-btn">
+          <span class="icon-wrapper"><i class="ph ph-gear"></i></span>
+          <span class="label">Settings</span>
+        </li>
+        <li id="support-btn">
+          <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
+          <span class="label">Support</span>
+        </li>
+        <li id="logout-btn">
+          <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+          <span class="label">Logout</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Middle: Main Content -->
+    <div class="content-wrapper">
+      <!-- Main Content -->
+      <div class="main">
+        <div class="featured">
+          <div class="section-header">
+            <h3>My Favorite Books</h3>
+            <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
+          </div>
+
+          {% if favorite_books %}
+            <div class="books-container">
+              <div class="books-row">
+                {% for favorite in favorite_books %}
+                  <div class="book-card">
+                    <div class="book-cover">
+                      <img src="{{ favorite.book.get_image_url }}" alt="{{ favorite.book.title }}">
+                      <div class="book-actions">
+                        <div class="action-icon">
+                          <i class="ph ph-heart-straight favorite-active"
+                             onclick="event.preventDefault(); document.getElementById('favorite-form-{{ favorite.book.id }}').submit();"></i>
+                        </div>
+                        <form id="favorite-form-{{ favorite.book.id }}" action="{% url 'addFavorite' favorite.book.id %}" method="post"
+                              style="display: none;">
+                          {% csrf_token %}
+                        </form>
+                      </div>
+                    </div>
+                    <div class="book-info">
+                      <div class="book-title">{{ favorite.book.title }}</div>
+                      <div class="book-author">{{ favorite.book.author }}</div>
+                      <div class="book-rating">
+                        {% if favorite.book.rating %}
+                          <i class="ph ph-star-fill"></i> {{ favorite.book.rating }}
+                        {% else %}
+                          <i class="ph ph-star"></i> No ratings
+                        {% endif %}
+                      </div>
+                      <div class="book-category">{{ favorite.book.get_category }}</div>
+                      <div class="book-actions-btns">
+                        <form action="{% url 'borrowBook' favorite.book.id %}" method="post" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="borrow-btn">Borrow</button>
+                        </form>
+                        <form action="{% url 'buyBook' favorite.book.id %}" method="post" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="buy-btn">Buy</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <i class="ph ph-book-bookmark" style="font-size: 64px; color: #ccc;"></i>
+              <p>You don't have any favorite books yet.</p>
+              <a href="{% url 'categories' %}" class="btn-explore">Explore Categories</a>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+  <script src="{% static 'home/navbar.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Navigation via sidebar
+      document.getElementById('home-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'homepage' %}";
+      });
+
+      document.getElementById('categories-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'categories' %}";
+      });
+
+      document.getElementById('borrowed-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'borrowedBooks' %}";
+      });
+
+      document.getElementById('favourites-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'favorites' %}";
+      });
+
+      document.getElementById('logout-btn').addEventListener('click', function() {
+        window.location.href = "{% url 'logout' %}";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -3,8 +3,8 @@ from django.contrib.auth import logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
-from django.views.decorators.http import require_GET
-from .models import Members, Books, BorrowedBook, Category
+from django.views.decorators.http import require_GET, require_POST
+from .models import Members, Books, BorrowedBook, Category, FavouriteBooks, OwnedBooks
 
 
 from django.db.models import Count
@@ -19,12 +19,16 @@ def categoriesPage(request):
 
     user_image = None
     username = None
+    favorite_book_ids = []
     
     if request.session.get('is_logged_in'):
         try:
             user = Members.objects.get(email=request.session.get('user_email'))
             user_image = user.image.url if user.image else '/static/images/default-user.png'
             username = user.username
+            
+            # Get user's favorite books
+            favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
         except Members.DoesNotExist:
             pass
         except Exception as e:
@@ -35,6 +39,7 @@ def categoriesPage(request):
         'categories': categories,
         'user_image': user_image,
         'username': username,
+        'favorite_book_ids': list(favorite_book_ids),
     })
 
 def get_recommended_books(user, limit=12):
@@ -128,6 +133,7 @@ def homePage(request):
     username = None
     user = None
     recommended_books = []
+    favorite_book_ids = []
 
     if request.session.get('is_logged_in'):
         try:
@@ -142,6 +148,9 @@ def homePage(request):
             for book in recommended_books:
                 if book.borrowPrice and not book.buyPrice:
                     book.save()  # This will trigger the save() method that calculates buyPrice
+                    
+            # Get user's favorite books
+            favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
         except Members.DoesNotExist:
             pass
         except Exception as e:
@@ -178,6 +187,7 @@ def homePage(request):
         'recommended_books': recommended_books,
         'has_recommendations': len(recommended_books) > 0,
         'categories': categories,
+        'favorite_book_ids': list(favorite_book_ids),
     })
 
 
@@ -369,6 +379,72 @@ def buyBook(request, book_id):
         else:
             return redirect('/home/login/')
     return redirect('/home/availableBooks/')
+
+@require_POST
+def addFavorite(request, book_id):
+    """Add a book to the user's favorites"""
+    if not request.session.get('is_logged_in'):
+        messages.error(request, "Please log in to add favorites")
+        return redirect('/home/login/')
+    
+    try:
+        # Get the user and book
+        user_email = request.session.get('user_email')
+        member = get_object_or_404(Members, email=user_email)
+        book = get_object_or_404(Books, id=book_id)
+        
+        # Check if the book is already in favorites
+        favorite_exists = FavouriteBooks.objects.filter(member=member, book=book).exists()
+        
+        if favorite_exists:
+            # If already favorited, remove from favorites (toggle behavior)
+            FavouriteBooks.objects.filter(member=member, book=book).delete()
+            messages.success(request, f"'{book.title}' removed from your favorites.")
+        else:
+            # Add to favorites
+            FavouriteBooks.objects.create(member=member, book=book)
+            messages.success(request, f"'{book.title}' added to your favorites!")
+            
+        # Redirect back to the page the user was on
+        return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+        
+    except Members.DoesNotExist:
+        messages.error(request, "User not found")
+    except Books.DoesNotExist:
+        messages.error(request, "Book not found")
+    except Exception as e:
+        messages.error(request, f"An error occurred: {str(e)}")
+    
+    # If anything goes wrong, redirect back to the page the user was on
+    return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+
+def getFavoriteBooks(request):
+    """Get the list of books favorited by the user"""
+    if not request.session.get('is_logged_in'):
+        messages.error(request, "Please log in to view favorites")
+        return redirect('/home/login/')
+    
+    try:
+        user_email = request.session.get('user_email')
+        member = get_object_or_404(Members, email=user_email)
+        favorite_books = FavouriteBooks.objects.filter(member=member).select_related('book')
+        
+        user_image = member.image.url if member.image else '/static/images/default-user.png'
+        username = member.username
+        
+        return render(request, 'favorites.html', {
+            'is_logged_in': True,
+            'user_image': user_image,
+            'username': username,
+            'favorite_books': favorite_books,
+        })
+        
+    except Members.DoesNotExist:
+        messages.error(request, "User not found")
+    except Exception as e:
+        messages.error(request, f"An error occurred: {str(e)}")
+    
+    return redirect('/home/homePage/')
 
 @require_GET
 def all_filter_books_by_category(request, category_id=None):

@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   if(favouritesBtn){
       favouritesBtn.addEventListener('click',function(){
-          window.location.href="/home/favourites/"
+          window.location.href="/home/favorites/"
       })
   }
   if(supportBtn){

@@ -16,10 +16,11 @@ urlpatterns = [
     path('unauthorized/', views.unauthorized, name="unauthorized"),
     path('borrow/<int:book_id>/', views.borrowBook, name='borrowBook'),
     path('buy/<int:book_id>/', views.buyBook, name='buyBook'),
+    path('add-favorite/<int:book_id>/', views.addFavorite, name='addFavorite'),
+    path('favorites/', views.getFavoriteBooks, name='favorites'),
     path('api/filter-books-by-category/', views.filter_books_by_category, name='filter_books_by_category'),
     path('api/all_filter-books-by-category/', views.all_filter_books_by_category, name='all_filter_books_by_category'),
     path('categories/', views.categoriesPage, name='categories'),
-    # API endpoints for category filtering
     path('api/books/', views.filter_books_by_category, name='api_books'),
     path('api/books-by-category/<str:category_id>/', views.filter_books_by_category, name='api_books_by_category'),
 ]
