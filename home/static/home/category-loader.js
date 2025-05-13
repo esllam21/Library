@@ -550,10 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
     `;
       if (book.stock === 0) {
-          bookCard.style.opacity = "0.5";
-          bookCard.querySelector('.borrow-btn').disabled = true;
-          bookCard.querySelector('.buy-btn').disabled = true;
-          bookCard.querySelector('.action-buttons').innerHTML += '<div class="out-of-stock">Out of Stock</div>';
+          bookCard.classList.add('out-of-stock');
       }
 
       // Add click event listener to book card
