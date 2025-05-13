@@ -89,10 +89,7 @@
             <div class="books-row">
               {% for book in books %}
 
-                <div class="book-card"
-                  {% if book.stock == 0 %}
-                    class="out-of-stock"
-                  {% endif %}
+                <div class="book-card {% if book.stock == 0 %}out-of-stock{% endif %}"
                      data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
                      data-pages="{{ book.pageCount }}"
                      data-rating-count="{{ book.ratingCount|default:'0' }}">
