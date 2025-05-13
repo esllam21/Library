@@ -2,74 +2,218 @@
 <html lang="en">
 {% load static %}
 <head>
-    <link rel="shortcut icon" type="x-icon" href="{% static 'home/icons/parthenon-svgrepo-com.svg' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Borrowed Books</title>
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
-    <link rel="stylesheet" href="{% static 'home/all.css' %}">
-    <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+  <meta charset="UTF-8">
+  <title>My Library</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
 </head>
-<body>
-    <div id="auth-section" class="profile-wrapper all">
-      {% if current_member and current_member.image %}
-        <div class="user-menu" id="user-menu">
-          <img src="{{ current_member.image.url }}" class="user-avatar" id="user-avatar">
-          <div class="dropdown-menu" id="dropdown-menu">
-            <a href="/home/profile/" class="test">My Profile</a>
-            <a href="/home/logout/" class="test">Logout</a>
-          </div>
+<body data-logged-in="{{ is_logged_in|lower }}">
+  <!-- Top Navbar -->
+  <div class="navbar">
+    <h2 class="logo">ReadIT</h2>
+    <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
+    <div class="search-input">
+      <input type="text" placeholder="Search your favourite books...">
+    </div>
+    <div class="profile">
+      <span class="notification"><i class="ph ph-bell"></i></span>
+      
+      {% if is_logged_in %}
+        <div class="user-profile">
+          <img src="{{ user_image }}" alt="{{ username }}">
+          <span class="username">{{ username }}</span>
         </div>
       {% else %}
-        <a href="/home/login/" class="sign-in-link">Sign In</a>
+        <a href="{% url 'login' %}" class="sign-in-btn">
+          <i class="ph ph-sign-in"></i>
+          <span>Sign In</span>
+        </a>
       {% endif %}
     </div>
+  </div>
 
-<div class="sidebar">
-        <a href="#" class="logo">
-            <div class="readit">
-                <span >readIt</span>
-            </div>
-        </a>
-        <ul class="side-menu">
-            <button class="sidebar-buttons home" id="home-btn">Home</button>
-            <button class="sidebar-buttons borrowed" id="borrowed-btn">Borrowd Books</button>
-            <button class="sidebar-buttons all-books" id="allBooks-btn">All Books</button>
-            <button class="sidebar-buttons darkMode">Dark / Light</button>
-        </ul>
+  <!-- Main Layout: Sidebar + Content + Profile Box -->
+  <div class="main-content-area">
+    <!-- Left: Sidebar -->
+    <div class="sidebar">
+      <ul>
+        <li id="home-btn">
+          <span class="icon-wrapper"><i class="ph ph-house"></i></span>
+          <span class="label">Discover</span>
+        </li>
+        <li id="categories-btn">
+          <span class="icon-wrapper"><i class="ph ph-notebook"></i></span>
+          <span class="label">Category</span>
+        </li>
+        <li class="active" id="borrowed-btn">
+          <span class="icon-wrapper"><i class="ph ph-book-open"></i></span>
+          <span class="label">My Library</span>
+        </li>
+        <li id="favourites-btn">
+          <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
+          <span class="label">Favourites</span>
+        </li>
+        <div style="height: 20px;"></div>
+
+        <li id="settings-btn">
+          <span class="icon-wrapper"><i class="ph ph-gear"></i></span>
+          <span class="label">Settings</span>
+        </li>
+        <li id="support-btn">
+          <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
+          <span class="label">Support</span>
+        </li>
+        <li id="logout-btn">
+          <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+          <span class="label">Logout</span>
+        </li>
+      </ul>
     </div>
-<h1 class="heading">
-    {% if current_member %}
-      <span class="test">{{ current_member.username }}</span>
-    {% else %}
-      <span class="test">Welcome, Guest</span>
-    {% endif %}
-</h1>
-
-
-    <div class="main-dashboard">
-        <div class="recent-borrows" id="book-container">
+    <!-- Middle: Main Content -->
+    <div class="content-wrapper">
+      <!-- 🔸 MAIN CONTENT -->
+      <div class="main">
+        <!-- Borrowed Books Section -->
+        <div class="featured">
+          <div class="section-header">
+            <h3>Borrowed Books</h3>
+            <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
+          </div>
+          <div class="books-row">
             {% if borrowed_books %}
-                {% for borrow in borrowed_books %}
-                    <div class="book-card">
-                        <img src="{{ borrow.book.image.url }}" alt="{{ borrow.book.title }}" class="book-img">
-                        <div class="book-info">
-                            <h3>{{ borrow.book.title }}</h3>
-                            <p><strong>Author:</strong> {{ borrow.book.author }}</p>
-                            <p><strong>Borrowed on:</strong> {{ borrow.borrowed_date|date:"F j, Y, g:i a" }}</p>
-                        </div>
+              {% for borrow in borrowed_books %}
+                <div class="book-card"
+                     data-category="{% if borrow.book.get_category %}{{ borrow.book.get_category }}{% else %}Fiction{% endif %}"
+                     data-pages="{{ borrow.book.pageCount }}"
+                     data-rating-count="{{ borrow.book.ratingCount|default:'0' }}">
+                  <div class="book-card-img">
+                    {% if borrow.book.image %}
+                      <img src="{{ borrow.book.image.url }}" alt="{{ borrow.book.title }}">
+                    {% else %}
+                      <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ borrow.book.title }}">
+                    {% endif %}
+                    <div class="action-buttons">
+                      <a href="/home/return/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('return-form-{{ borrow.book.id }}').submit();">
+                        <button class="borrow-btn">Return</button>
+                      </a>
+                      <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
+                        <button class="buy-btn">Buy</button>
+                      </a>
                     </div>
-                {% endfor %}
+                    <form id="return-form-{{ borrow.book.id }}" action="/home/return/{{ borrow.book.id }}/" method="post" style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                    <form id="buy-form-{{ borrow.book.id }}" action="{% url 'buyBook' borrow.book.id %}" method="post" style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                  </div>
+                  <div class="book-card-content">
+                    <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                      <span class="book-title">{{ borrow.book.title }}</span>
+                      {% if borrow.book.id in favorite_book_ids %}
+                      <i class="ph-fill ph-heart-straight" style="color: red;"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ borrow.book.id }}').submit();"></i>
+                      {% else %}
+                      <i class="ph ph-heart-straight"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ borrow.book.id }}').submit();"></i>
+                      {% endif %}
+                    </div>
+                    <form id="favorite-form-{{ borrow.book.id }}" action="{% url 'addFavorite' borrow.book.id %}" method="post"
+                          style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                    <div class="book-info">
+                      <span class="book-author">{{ borrow.book.author }}</span>
+                      <div class="book-rating">
+                        <i class="ph ph-star-fill"></i>
+                        <span>{{ borrow.book.rating|default:"N/A" }}</span>
+                      </div>
+                    </div>
+                    <div class="book-prices">
+                      <div class="book-price">Borrowed: {{ borrow.borrowed_date|date:"M d, Y" }}</div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
             {% else %}
-                <p>You haven't borrowed any books yet.</p>
+              <div class="no-books">You haven't borrowed any books yet.</div>
             {% endif %}
+          </div>
         </div>
-    </div>
-    <script src="{% static 'home/borrowed-books-user.js' %}"></script>
-    <script src="{% static 'home/sidebar.js' %}"></script>
 
+        <!-- Owned Books Section -->
+        <div class="featured">
+          <div class="section-header">
+            <h3>Owned Books</h3>
+          </div>
+          <div class="books-row">
+            {% if owned_books %}
+              {% for owned in owned_books %}
+                <div class="book-card"
+                     data-category="{% if owned.book.get_category %}{{ owned.book.get_category }}{% else %}Fiction{% endif %}"
+                     data-pages="{{ owned.book.pageCount }}"
+                     data-rating-count="{{ owned.book.ratingCount|default:'0' }}">
+                  <div class="book-card-img">
+                    {% if owned.book.image %}
+                      <img src="{{ owned.book.image.url }}" alt="{{ owned.book.title }}">
+                    {% else %}
+                      <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ owned.book.title }}">
+                    {% endif %}
+                    <div class="action-buttons">
+                      <button class="owned-btn">Owned</button>
+                    </div>
+                  </div>
+                  <div class="book-card-content">
+                    <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                      <span class="book-title">{{ owned.book.title }}</span>
+                      {% if owned.book.id in favorite_book_ids %}
+                      <i class="ph-fill ph-heart-straight" style="color: red;"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-owned-{{ owned.book.id }}').submit();"></i>
+                      {% else %}
+                      <i class="ph ph-heart-straight"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-owned-{{ owned.book.id }}').submit();"></i>
+                      {% endif %}
+                    </div>
+                    <form id="favorite-form-owned-{{ owned.book.id }}" action="{% url 'addFavorite' owned.book.id %}" method="post"
+                          style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                    <div class="book-info">
+                      <span class="book-author">{{ owned.book.author }}</span>
+                      <div class="book-rating">
+                        <i class="ph ph-star-fill"></i>
+                        <span>{{ owned.book.rating|default:"N/A" }}</span>
+                      </div>
+                    </div>
+                    <div class="book-prices">
+                      <div class="book-price">Purchased: {{ owned.purchase_date|date:"M d, Y" }}</div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="no-books">You don't own any books yet.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Profile Box -->
+    <div class="profile-box"></div>
+  </div>
+
+  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+  <script src="{% static 'home/navbar.js' %}"></script>
+  <script>
+    // Make favorite book IDs available to JavaScript
+    window.favorite_book_ids = {{ favorite_book_ids|safe }};
+  </script>
 </body>
 </html>

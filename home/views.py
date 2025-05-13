@@ -228,11 +228,50 @@ def signup(request):
 
 
 def borrowedBooksUser(request):
-  user_email = request.session.get('user_email')
-  member = get_object_or_404(Members, email=user_email)
-  borrowed_books = BorrowedBook.objects.filter(member=member, returned=False)
+  user_image = None
+  username = None
+  user = None
+  favorite_book_ids = []
 
-  return render(request, 'borrowed-books-user.html', {'borrowed_books': borrowed_books})
+  if request.session.get('is_logged_in'):
+    try:
+      user_email = request.session.get('user_email')
+      user = get_object_or_404(Members, email=user_email)
+      user_image = user.image.url if user.image else '/static/images/default-user.png'
+      username = user.username
+
+      # Get user's borrowed and owned books
+      borrowed_books = BorrowedBook.objects.filter(member=user, returned=False)
+      owned_books = OwnedBooks.objects.filter(member=user)
+
+      # Get user's favorite books
+      favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
+    except Exception as e:
+      print(f"Error getting user details: {e}")
+      borrowed_books = []
+      owned_books = []
+  else:
+    return redirect('login')  # Redirect to login if not logged in
+
+  # Get top 10 categories with most books for display
+  try:
+    # Annotate categories with book count and order by count (descending)
+    categories = Category.objects.annotate(
+      book_count=Count('books')
+    ).order_by('-book_count')[:10]
+  except Exception as e:
+    print(f"Error fetching categories: {e}")
+    categories = []
+
+  return render(request, 'borrowed-books-user.html', {
+    'is_logged_in': request.session.get('is_logged_in', False),
+    'user_image': user_image,
+    'username': username,
+    'borrowed_books': borrowed_books,
+    'owned_books': owned_books,
+    'categories': categories,
+    'favorite_book_ids': list(favorite_book_ids),
+  })
 
 
 def borrowedBooksAdmin(request):
