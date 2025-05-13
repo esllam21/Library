@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+  <link rel="shortcut icon" type="x-icon" href="../assets/parthenon-svgrepo-com (1).svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borrowed Books</title>
+  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
+  <link rel="stylesheet" href="{% static 'home/all.css' %}">
+  <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+
+</head>
+
+<body>
+  <div id="auth-section" class="profile-wrapper all">
+    {% if current_member and current_member.image %}
+      <div class="user-menu" id="user-menu">
+        <img src="{{ current_member.image.url }}" class="user-avatar" id="user-avatar">
+        <div class="dropdown-menu" id="dropdown-menu">
+          <a href="/home/profile/" class="test">My Profile</a>
+          <a href="/home/logout/" class="test">Logout</a>
+        </div>
+      </div>
+    {% else %}
+      <a href="/home/login/" class="sign-in-link">Sign In</a>
+    {% endif %}
+  </div>
+  <div class="sidebar">
+    <a href="#" class="logo">
+      <div class="readit">
+        <span >readIt</span>
+      </div>
+    </a>
+    <ul class="side-menu">
+      <button class="sidebar-buttons home" id="home-btn">Home</button>
+      <button class="sidebar-buttons borrowed" id="borrowed-btn">Borrowd Books</button>
+      <button class="sidebar-buttons all-books" id="allBooks-btn">All Books</button>
+      <button class="sidebar-buttons darkMode">Dark / Light</button>
+    </ul>
+  </div>
+
+
+  <!--        <div class="main-dashboard">-->
+  <!--            <div class="recent-borrows"></div>-->
+  <h1 class="heading">
+    <span class="test">{{ current_member.username }}</span>
+  </h1>
+  <div class="main-dashboard">
+    <div class="recent-borrows" id="book-container">
+      {% if borrowed_books %}
+        {% for borrow in all_borrowed_books %}
+            {% if borrow.count > 0 %}
+              <div class="book-card">
+                <img src="{{ borrow.image.url }}" alt="{{ borrow.book.title }}" class="book-img">
+                <div class="book-info">
+                  <h3>{{ borrow.title }}</h3>
+                  <p><strong>Author:</strong> {{ borrow.author }}</p>
+                  <p><strong>Count:</strong> {{ borrow.count }}</p>
+                </div>
+              </div>
+            {% endif %}
+       {% endfor %}
+        <p>You haven't borrowed any books yet.</p>
+      {% endif %}
+    </div>
+  </div>
+  <script src="{% static 'home/borrowed-books-admin.js' %}"></script>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+</body>
+
+</html>

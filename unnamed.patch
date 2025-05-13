@@ -1,0 +1,23 @@
+Index: home/views.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/home/views.py b/home/views.py
+--- a/home/views.py	(date 1746825780769)
++++ b/home/views.py	(revision AI Assistant Changes)
+@@ -16,9 +16,13 @@
+         except Members.DoesNotExist:
+             pass
+ 
++    # Fetch 10 books from the database ordered by rating (highest first)
++    books = Books.objects.all().order_by('-rating')[:10]
++
+     return render(request, 'Home.html', {
+         'is_logged_in': request.session.get('is_logged_in', False),
+-        'user_image': user_image
++        'user_image': user_image,
++        'books': books
+     })
+ 
+ 

@@ -1,0 +1,47 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background-color: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  height: 77px;
+  width: 100%;
+  z-index: 10;
+  border: none;
+}
+
+.navbar .logo {
+  font-size: 22px;
+  font-weight: bold;
+  color: #1d4ed8;
+}
+
+.navbar .search-input {
+  flex: 1;
+  margin: 0 30px;
+}
+
+.navbar input[type="text"] {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+.navbar .profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.navbar .notification {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.navbar img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}

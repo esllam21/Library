@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <title>Categories - BookBase</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
+  {% csrf_token %}
+
+</head>
+<body data-logged-in="{{ is_logged_in|lower }}">
+  <!-- Top Navbar -->
+  <div class="navbar">
+    <h2 class="logo">ReadIT</h2>
+    <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
+    <div class="search-input">
+      <input type="text" placeholder="Search your favourite books...">
+    </div>
+    <div class="profile">
+      <span class="notification"><i class="ph ph-bell"></i></span>
+
+      {% if is_logged_in %}
+        <div class="user-profile">
+          <img src="{{ user_image }}" alt="{{ username }}">
+          <span class="username">{{ username }}</span>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="sign-in-btn">
+          <i class="ph ph-sign-in"></i>
+          <span>Sign In</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Layout: Sidebar + Content -->
+  <div class="main-content-area">
+    <!-- Left: Sidebar -->
+    <div class="sidebar">
+      <ul>
+        <li id="home-btn">
+          <span class="icon-wrapper"><i class="ph ph-house"></i></span>
+          <span class="label">Discover</span>
+        </li>
+        <li class="active" id="categories-btn">
+          <span class="icon-wrapper"><i class="ph ph-notebook"></i></span>
+          <span class="label">Category</span>
+        </li>
+        <li id="borrowed-btn">
+          <span class="icon-wrapper"><i class="ph ph-book-open"></i></span>
+          <span class="label">My Library</span>
+        </li>
+        <li id="favourites-btn">
+          <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
+          <span class="label">Favourite</span>
+        </li>
+        <div style="height: 20px;"></div>
+
+        <li id="settings-btn">
+          <span class="icon-wrapper"><i class="ph ph-gear"></i></span>
+          <span class="label">Settings</span>
+        </li>
+        <li id="support-btn">
+          <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
+          <span class="label">Support</span>
+        </li>
+        <li id="logout-btn">
+          <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+          <span class="label">Logout</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Middle: Main Content -->
+    <div class="content-wrapper">
+      <!-- Main Content -->
+      <div class="main">
+        <div class="featured">
+          <div class="section-header">
+            <h3>All Categories</h3>
+            <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
+          </div>
+
+          <!-- Categories Section -->
+          <div class="categories-section">
+            <div class="tags-container">
+              <div class="tags">
+                <div class="tag active" data-category-id="all">All</div>
+                {% for category in categories %}
+                  <div class="tag" data-category-id="{{ category.id }}">
+                    {{ category.name }} ({{ category.book_count }})
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div id="category-books-container" class="books-row category-books category-fade-in">
+              <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading books...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="profile-box"></div>
+
+  </div>
+
+  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+  <script src="{% static 'home/navbar.js' %}"></script>
+  <script src="{% static 'home/category-loader.js' %}"></script>
+</body>
+</html>

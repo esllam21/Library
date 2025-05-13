@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="x-icon" href="/assets/parthenon-svgrepo-com (1).svg">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{% static 'home/admin-dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'home/all.css' %}">
+
+    <title>Dashboard</title>
+</head>
+<body class="">
+        <div class="sidebar">
+        <a href="#" class="logo">
+            <div class="readit">
+                <span >readIt</span>
+            </div>
+        </a>
+        <ul class="side-menu">
+            <button class="sidebar-buttons home" id="home-btn">Home</button>
+            <button class="sidebar-buttons borrowed" id="borrowed-btn">Borrowd Books</button>
+            <button class="sidebar-buttons all-books" id="allBooks-btn">All Books</button>
+            <button class="sidebar-buttons darkMode">Dark / Light</button>
+        </ul>
+    </div>
+
+    <main id="main-content">
+        <div class="main-content">
+            <div class="header">
+                <h1>Dashboard</h1>
+            </div>
+            <ul class="cards">
+                <a href="/home/borrowedBooksAdmin">
+                    <li class="lists">
+                        <i class='bx bxs-shopping-bags' ></i>
+                    <span class="info borrowed-book-count">
+                        <h3></h3>
+                        <p>Borrowed Books</p>
+                    </span>
+                    </li>
+    
+                </a>
+                <a href="/home/addBooks/">
+                    <li class="lists">
+                        <i class='bx bx-book'></i>
+                    <span class="info Published-books-count">
+                        <h3></h3>
+                        <p>Add Books</p>
+                    </span>
+                    </li>
+                </a>
+                <li class="lists">
+                    <i class="bx bx-dollar-circle"></i>
+                    <span class="info earnings-this-month" id="monthly-earnings">
+                        <h3></h3>
+                        <p>This Month</p>
+                    </span>
+                    </li>
+                <li class="lists">
+                    <i class='bx bx-chart'></i>
+                    <span class="info most-borrowed-book">
+                        <h3></h3>
+                        <p>Most Borrowed Book</p>
+                    </span>
+                    <img class="mostbook" >
+                </li>
+            </ul>
+        </div>
+    </main>
+    <script src="{% static 'home/admin-dashboard.js' %}"></script>
+    <script src="{% static 'home/sidebar.js' %}"></script>
+
+</body>
+</html>

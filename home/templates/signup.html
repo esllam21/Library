@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+    <head>
+        <link rel="shortcut icon" type="x-icon" href="assets/parthenon-svgrepo-com (1).svg">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign Up | ReadIt</title>
+        <link rel="stylesheet" href="{% static 'home/signup.css' %}">
+        <script src="{% static 'home/signup.js' %}"></script>
+
+    </head>
+    <body>
+        <nav>
+            <ul>
+                <li><a id="Home" href="/home/homePage">readit</a></li>
+            </ul>
+        </nav>
+        <div class="mainWindow">
+            <div class="formWindow">
+                <div class="form">
+                    <a href="/home/homePage">
+                        <img id="backArrow" src="assets/back-arrow-navigation-svgrepo-com.svg" alt="Back to Home Page">
+                    </a>
+                    <h1 id="signup-header">Sign Up</h1>
+                    <p class="login-para">Already a member? <a id="login" href="/home/login/">Login Here.</a></p>
+                    <form id="signup-form" action="">
+                        <input type="text" name="First Name" placeholder="First Name" required>
+                        <input type="text" name="Last Name" placeholder="Last Name">
+                        <input type="email" name="Email" placeholder="Email" required>
+                        <input type="password" name="Password" placeholder="Password" required id="password">
+                        <input type="password" name="Confirm Password" placeholder="Confirm Password" required id="confirmPassword">
+                        <p id="errorMsg" style="color: red; display: none;">Password isn't a match</p>
+                        <div class="radio">
+                            <input class="radio-input" type="radio" value="Publisher" name="user-type" id="Publisher">
+                            <label class="radio-label" for="Publisher"><ion-icon name="pencil-outline"></ion-icon>Admin</label>
+                            <input class="radio-input" type="radio" value="Customer" name="user-type" id="Customer">
+                            <label class="radio-label" for="Customer"><ion-icon name="book-outline"></ion-icon>Customer/publisher</label>
+                        </div>
+                        <input id="submit" type="submit">
+                        <br>
+                        <span id="error-messages"></span>
+                    </form>
+                </div>
+                <div class="imageSlide">
+                    <div class="image-container">
+                        <img id="slide-1" src="assets/Rebecca Mock Illustrates.gif" alt="Image 1">
+                    </div>
+                    <div class="image-para">
+                        <p>Join us in unlocking the gateway to endless knowledge and imagination.
+                            Sign up today and embark on a journey of literary adventure at ReadIt!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
