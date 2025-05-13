@@ -432,11 +432,15 @@ def getFavoriteBooks(request):
         user_image = member.image.url if member.image else '/static/images/default-user.png'
         username = member.username
         
+        # Get favorite book IDs for heart icon display
+        favorite_book_ids = list(favorite_books.values_list('book_id', flat=True))
+        
         return render(request, 'favorites.html', {
             'is_logged_in': True,
             'user_image': user_image,
             'username': username,
             'favorite_books': favorite_books,
+            'favorite_book_ids': favorite_book_ids,
         })
         
     except Members.DoesNotExist:

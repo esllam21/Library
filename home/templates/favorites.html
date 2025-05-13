@@ -10,8 +10,6 @@
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
-  {% csrf_token %}
-
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}">
   <!-- Top Navbar -->
@@ -38,7 +36,7 @@
     </div>
   </div>
 
-  <!-- Main Layout: Sidebar + Content -->
+  <!-- Main Layout: Sidebar + Content + Profile Box -->
   <div class="main-content-area">
     <!-- Left: Sidebar -->
     <div class="sidebar">
@@ -85,50 +83,59 @@
             <h3>My Favorite Books</h3>
             <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
           </div>
-
+          
           {% if favorite_books %}
-            <div class="books-container">
-              <div class="books-row">
-                {% for favorite in favorite_books %}
-                  <div class="book-card">
-                    <div class="book-cover">
-                      <img src="{{ favorite.book.get_image_url }}" alt="{{ favorite.book.title }}">
-                      <div class="book-actions">
-                        <div class="action-icon">
-                          <i class="ph ph-heart-straight favorite-active"
-                             onclick="event.preventDefault(); document.getElementById('favorite-form-{{ favorite.book.id }}').submit();"></i>
-                        </div>
-                        <form id="favorite-form-{{ favorite.book.id }}" action="{% url 'addFavorite' favorite.book.id %}" method="post"
-                              style="display: none;">
-                          {% csrf_token %}
-                        </form>
+            <div class="books-row">
+              {% for favorite in favorite_books %}
+                <div class="book-card" 
+                     data-category="{% if favorite.book.get_category %}{{ favorite.book.get_category }}{% else %}Fiction{% endif %}"
+                     data-pages="{{ favorite.book.pageCount }}"
+                     data-rating-count="{{ favorite.book.ratingCount|default:'0' }}">
+                  <div class="book-card-img">
+                    {% if favorite.book.image %}
+                      <img src="{{ favorite.book.image.url }}" alt="{{ favorite.book.title }}">
+                    {% else %}
+                      <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ favorite.book.title }}">
+                    {% endif %}
+                    <div class="action-buttons">
+                      <a href="/home/borrow/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ favorite.book.id }}').submit();">
+                        <button class="borrow-btn">Borrow</button>
+                      </a>
+                      <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ favorite.book.id }}').submit();">
+                        <button class="buy-btn">Buy</button>
+                      </a>
+                    </div>
+                    <form id="borrow-form-{{ favorite.book.id }}" action="{% url 'borrowBook' favorite.book.id %}" method="post" style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                    <form id="buy-form-{{ favorite.book.id }}" action="/home/buy/{{ favorite.book.id }}/" method="post" style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                  </div>
+                  <div class="book-card-content">
+                    <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                      <span class="book-title">{{ favorite.book.title }}</span>
+                      <i class="ph ph-heart-straight"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ favorite.book.id }}').submit();"></i>
+                    </div>
+                    <form id="favorite-form-{{ favorite.book.id }}" action="{% url 'addFavorite' favorite.book.id %}" method="post"
+                          style="display: none;">
+                      {% csrf_token %}
+                    </form>
+                    <div class="book-info">
+                      <span class="book-author">{{ favorite.book.author }}</span>
+                      <div class="book-rating">
+                        <i class="ph ph-star-fill"></i>
+                        <span>{{ favorite.book.rating|default:"N/A" }}</span>
                       </div>
                     </div>
-                    <div class="book-info">
-                      <div class="book-title">{{ favorite.book.title }}</div>
-                      <div class="book-author">{{ favorite.book.author }}</div>
-                      <div class="book-rating">
-                        {% if favorite.book.rating %}
-                          <i class="ph ph-star-fill"></i> {{ favorite.book.rating }}
-                        {% else %}
-                          <i class="ph ph-star"></i> No ratings
-                        {% endif %}
-                      </div>
-                      <div class="book-category">{{ favorite.book.get_category }}</div>
-                      <div class="book-actions-btns">
-                        <form action="{% url 'borrowBook' favorite.book.id %}" method="post" class="d-inline">
-                          {% csrf_token %}
-                          <button type="submit" class="borrow-btn">Borrow</button>
-                        </form>
-                        <form action="{% url 'buyBook' favorite.book.id %}" method="post" class="d-inline">
-                          {% csrf_token %}
-                          <button type="submit" class="buy-btn">Buy</button>
-                        </form>
-                      </div>
+                    <div class="book-prices">
+                      <div class="book-price">${{ favorite.book.borrowPrice }}</div>
+                      <div class="buy-price">${{ favorite.book.buyPrice|default:favorite.book.calculated_buy_price }}</div>
                     </div>
                   </div>
-                {% endfor %}
-              </div>
+                </div>
+              {% endfor %}
             </div>
           {% else %}
             <div class="empty-state">
@@ -137,10 +144,12 @@
               <a href="{% url 'categories' %}" class="btn-explore">Explore Categories</a>
             </div>
           {% endif %}
-
         </div>
       </div>
     </div>
+    
+    <!-- Right: Profile Box -->
+    <div class="profile-box"></div>
   </div>
 
   <script src="{% static 'home/home.js' %}"></script>
