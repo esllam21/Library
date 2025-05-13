@@ -466,16 +466,20 @@ document.addEventListener('DOMContentLoaded', function() {
     return '';
   }
   
-  function isFavorite(bookId) {
+  function isFavorite(bookId, book) {
     // Check if favorite_book_ids exists and contains the book id
     if (window.favorite_book_ids && Array.isArray(window.favorite_book_ids)) {
       return window.favorite_book_ids.includes(bookId);
+    }
+    if(book &&book.is_favorite !== undefined){
+        return book.is_favorite
     }
     return false;
   }
   
   function createBookCard(book) {
     // Create a new book card element
+
     const bookCard = document.createElement('div');
     bookCard.className = 'book-card';
     bookCard.setAttribute('data-category', book.category);
@@ -519,28 +523,28 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
       <div class="book-card-content">
-        <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
-          <span class="book-title">${book.title}</span>
-          <i class="${isFavorite(book.id) ? 'ph-fill ph-heart-straight' : 'ph ph-heart-straight'}"
-             style="${isFavorite(book.id) ? 'color: red;' : ''}"
-             onclick="event.preventDefault(); document.getElementById('favorite-form-discover-${book.id}').submit();"></i>
-        </div>
-        <form id="favorite-form-discover-${book.id}" action="/home/add-favorite/${book.id}/" 
-              method="post" style="display: none;">
-          <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
-        </form>
-        <div class="book-info">
-          <span class="book-author">${book.author}</span>
-          <div class="book-rating">
-            <i class="ph ph-star-fill"></i>
-            <span>${book.rating.toFixed(1)}</span>
+            <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+              <span class="book-title">${book.title}</span>
+              <i class="${isFavorite(book.id,book) ? 'ph-fill ph-heart-straight' : 'ph ph-heart-straight'}"
+                 style="${isFavorite(book.id,book) ? 'color: red;' : ''}"
+                 onclick="event.preventDefault(); document.getElementById('favorite-form-discover-${book.id}').submit();"></i>
+            </div>
+            <form id="favorite-form-discover-${book.id}" action="/home/add-favorite/${book.id}/" 
+                  method="post" style="display: none;">
+              <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
+            </form>
+            <div class="book-info">
+              <span class="book-author">${book.author}</span>
+              <div class="book-rating">
+                <i class="ph ph-star-fill"></i>
+                <span>${book.rating.toFixed(1)}</span>
+              </div>
+            </div>
+            <div class="book-prices">
+              <div class="book-price">${borrowPrice}</div>
+              <div class="buy-price">${buyPrice}</div>
+            </div>
           </div>
-        </div>
-        <div class="book-prices">
-          <div class="book-price">${borrowPrice}</div>
-          <div class="buy-price">${buyPrice}</div>
-        </div>
-      </div>
     `;
       if (book.stock == 0) {
           bookCard.style.opacity = "0.5";
