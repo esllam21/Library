@@ -85,68 +85,8 @@
           </div>
           <div class="books-row">
             {% for book in recommended_books %}
-              <div class="book-card" 
-                   data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
-                   data-pages="{{ book.pageCount }}"
-                   data-rating-count="{{ book.ratingCount|default:'0' }}">
-                <div class="book-card-img">
-                  {% if book.image %}
-                    <img src="{{ book.image.url }}" alt="{{ book.title }}">
-                  {% else %}
-                    <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
-                  {% endif %}
-                  <div class="action-buttons">
-                    <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
-                      <button class="borrow-btn">Borrow</button>
-                    </a>
-                    <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
-                      <button class="buy-btn">Buy</button>
-                    </a>
-                  </div>
-                  <form id="borrow-form-{{ book.id }}" action="/home/borrow/{{ book.id }}/" method="post" style="display: none;">
-                    {% csrf_token %}
-                  </form>
-                  <form id="buy-form-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
-                    {% csrf_token %}
-                  </form>
-                </div>
-                <div class="book-card-content">
-                  <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
-                    <span class="book-title">{{ book.title }}</span>
-                    <i class="ph ph-heart-straight"
-                       onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
-                  </div>
-                  <form id="favorite-form-{{ book.id }}" action="{% url 'addFavorite' book.id %}" method="post"
-                        style="display: none;">
-                    {% csrf_token %}
-                  </form>
-                  <div class="book-info">
-                    <span class="book-author">{{ book.author }}</span>
-                    <div class="book-rating">
-                      <i class="ph ph-star-fill"></i>
-                      <span>{{ book.rating|default:"N/A" }}</span>
-                    </div>
-                  </div>
-                  <div class="book-prices">
-                    <div class="book-price">${{ book.borrowPrice }}</div>
-                    <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-      </div>
-      {% endif %}
-      
-      <div class="featured">
-          <div class="section-header">
-            <h3>Discover</h3>
-            <a href="/home/categories/" class="see-all-btn">See All <i class="ph ph-arrow-right"></i></a>
-          </div>
-          <div class="books-row">
-            {% if books %}
-              {% for book in books %}
-                <div class="book-card" 
+              {% if book.stock != 0 %}
+                <div class="book-card"
                      data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
                      data-pages="{{ book.pageCount }}"
                      data-rating-count="{{ book.ratingCount|default:'0' }}">
@@ -157,28 +97,33 @@
                       <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
                     {% endif %}
                     <div class="action-buttons">
-                      <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-discover-{{ book.id }}').submit();">
+                      <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
                         <button class="borrow-btn">Borrow</button>
                       </a>
-                      <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-discover-{{ book.id }}').submit();">
+                      <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
                         <button class="buy-btn">Buy</button>
                       </a>
                     </div>
-                    <form id="borrow-form-discover-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
+                    <form id="borrow-form-{{ book.id }}" action="/home/borrow/{{ book.id }}/" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
-                    <form id="buy-form-discover-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
+                    <form id="buy-form-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
                       {% csrf_token %}
                     </form>
                   </div>
                   <div class="book-card-content">
                     <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
                       <span class="book-title">{{ book.title }}</span>
+                      {% if book.id in favorite_book_ids %}
+                      <i class="ph-fill ph-heart-straight" style="color: red;"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
+                      {% else %}
                       <i class="ph ph-heart-straight"
-                         onclick="event.preventDefault(); document.getElementById('favorite-form-discover-{{ book.id }}').submit();"></i>
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
+                      {% endif %}
                     </div>
-                    <form id="favorite-form-discover-{{ book.id }}" action="{% url 'addFavorite' book.id %}"
-                          method="post" style="display: none;">
+                    <form id="favorite-form-{{ book.id }}" action="{% url 'addFavorite' book.id %}" method="post"
+                          style="display: none;">
                       {% csrf_token %}
                     </form>
                     <div class="book-info">
@@ -194,6 +139,75 @@
                     </div>
                   </div>
                 </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+      </div>
+      {% endif %}
+      
+      <div class="featured">
+          <div class="section-header">
+            <h3>Discover</h3>
+            <a href="/home/categories/" class="see-all-btn">See All <i class="ph ph-arrow-right"></i></a>
+          </div>
+          <div class="books-row">
+            {% if books %}
+              {% for book in books %}
+                {% if book.stock != 0 %}
+                  <div class="book-card"
+                       data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
+                       data-pages="{{ book.pageCount }}"
+                       data-rating-count="{{ book.ratingCount|default:'0' }}">
+                    <div class="book-card-img">
+                      {% if book.image %}
+                        <img src="{{ book.image.url }}" alt="{{ book.title }}">
+                      {% else %}
+                        <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
+                      {% endif %}
+                      <div class="action-buttons">
+                        <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-discover-{{ book.id }}').submit();">
+                          <button class="borrow-btn">Borrow</button>
+                        </a>
+                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-discover-{{ book.id }}').submit();">
+                          <button class="buy-btn">Buy</button>
+                        </a>
+                      </div>
+                      <form id="borrow-form-discover-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                      <form id="buy-form-discover-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                    </div>
+                    <div class="book-card-content">
+                      <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                        <span class="book-title">{{ book.title }}</span>
+                      {% if book.id in favorite_book_ids %}
+                      <i class="ph-fill ph-heart-straight" style="color: red;"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
+                      {% else %}
+                      <i class="ph ph-heart-straight"
+                         onclick="event.preventDefault(); document.getElementById('favorite-form-{{ book.id }}').submit();"></i>
+                      {% endif %}
+                      </div>
+                      <form id="favorite-form-discover-{{ book.id }}" action="{% url 'addFavorite' book.id %}"
+                            method="post" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                      <div class="book-info">
+                        <span class="book-author">{{ book.author }}</span>
+                        <div class="book-rating">
+                          <i class="ph ph-star-fill"></i>
+                          <span>{{ book.rating|default:"N/A" }}</span>
+                        </div>
+                      </div>
+                      <div class="book-prices">
+                        <div class="book-price">${{ book.borrowPrice }}</div>
+                        <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
+                      </div>
+                    </div>
+                  </div>
+                {% endif %}
               {% endfor %}
             {% else %}
               <div class="no-books">No books available at the moment.</div>
@@ -234,6 +248,10 @@
   <script src="{% static 'home/home.js' %}"></script>
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
+  <script>
+    // Make favorite book IDs available to JavaScript
+    window.favorite_book_ids = {{ favorite_book_ids|safe }};
+  </script>
   <script src="{% static 'home/category-loader.js' %}"></script>
 </body>
 </html>

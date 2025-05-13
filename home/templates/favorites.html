@@ -115,7 +115,7 @@
                   <div class="book-card-content">
                     <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
                       <span class="book-title">{{ favorite.book.title }}</span>
-                      <i class="ph ph-heart-straight"
+                      <i class="ph-fill ph-heart-straight" style="color: red;"
                          onclick="event.preventDefault(); document.getElementById('favorite-form-{{ favorite.book.id }}').submit();"></i>
                     </div>
                     <form id="favorite-form-{{ favorite.book.id }}" action="{% url 'addFavorite' favorite.book.id %}" method="post"

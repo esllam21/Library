@@ -466,6 +466,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return '';
   }
   
+  function isFavorite(bookId) {
+    // Check if favorite_book_ids exists and contains the book id
+    if (window.favorite_book_ids && Array.isArray(window.favorite_book_ids)) {
+      return window.favorite_book_ids.includes(bookId);
+    }
+    return false;
+  }
+  
   function createBookCard(book) {
     // Create a new book card element
     const bookCard = document.createElement('div');
@@ -513,7 +521,8 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="book-card-content">
         <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
           <span class="book-title">${book.title}</span>
-          <i class="ph ph-heart-straight"
+          <i class="${isFavorite(book.id) ? 'ph-fill ph-heart-straight' : 'ph ph-heart-straight'}"
+             style="${isFavorite(book.id) ? 'color: red;' : ''}"
              onclick="event.preventDefault(); document.getElementById('favorite-form-discover-${book.id}').submit();"></i>
         </div>
         <form id="favorite-form-discover-${book.id}" action="/home/add-favorite/${book.id}/" 
@@ -533,8 +542,14 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
     `;
+      if (book.stock == 0) {
+          bookCard.style.opacity = "0.5";
+          bookCard.querySelector('.borrow-btn').disabled = true;
+          bookCard.querySelector('.buy-btn').disabled = true;
+          bookCard.querySelector('.action-buttons').innerHTML += '<div class="out-of-stock">Out of Stock</div>';
+      }
 
-    // Add click event listener to book card
+      // Add click event listener to book card
     bookCard.addEventListener('click', function(e) {
       // Only trigger if click wasn't on a button
       if (!e.target.classList.contains('borrow-btn') &&
