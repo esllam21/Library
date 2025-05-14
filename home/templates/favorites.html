@@ -156,29 +156,5 @@
   <script src="{% static 'home/home.js' %}"></script>
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Navigation via sidebar
-      document.getElementById('home-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'homepage' %}";
-      });
-
-      document.getElementById('categories-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'categories' %}";
-      });
-
-      document.getElementById('borrowed-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'borrowedBooks' %}";
-      });
-
-      document.getElementById('favourites-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'favorites' %}";
-      });
-
-      document.getElementById('logout-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'logout' %}";
-      });
-    });
-  </script>
 </body>
 </html>

@@ -5,10 +5,6 @@ document.addEventListener("DOMContentLoaded", function() {
   const profileBox = document.querySelector('.profile-box');
   let activeBookCard = null; // Track active book card
   const booksContainer = document.getElementById('category-books-container');
-  if (!booksContainer) {
-    console.error('Category books container not found!');
-    return;
-  }
   function loadCategoryBooks(categoryId) {
     // Show loading spinner
     booksContainer.innerHTML = `
@@ -19,8 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
     `;
     
     // Log the category being loaded
-    console.log(`Loading books for category ID: ${categoryId}`);
-    
+
     // Define the API endpoint
     const currentPath = window.location.pathname;
     let url;
@@ -29,9 +24,6 @@ document.addEventListener("DOMContentLoaded", function() {
     } else if (currentPath.includes('home/homePage/')) {
       url = `/home/api/filter-books-by-category/?category_id=${categoryId}`;
     }
-    
-    console.log(`Using API endpoint: ${url}`);
-    
     // Fetch books from the API
     fetch(url)
       .then(response => {
@@ -48,15 +40,9 @@ document.addEventListener("DOMContentLoaded", function() {
         if (data.success && data.books && data.books.length > 0) {
           // Create and append book cards
           data.books.forEach(book => {
-                  // Debug log to check what description data we're getting
-                  console.log('Book data:', book.title, 'Description:', book.description);
-            // if(book.stock!==0){
             const bookCard = createBookCard(book);
             booksContainer.appendChild(bookCard);
-            // }
           });
-          
-          console.log(`Loaded ${data.books.length} books for category ${categoryId}`);
         } else {
           // No books found
           booksContainer.innerHTML = `
@@ -64,12 +50,10 @@ document.addEventListener("DOMContentLoaded", function() {
               No books found in this category.
             </div>
           `;
-          console.log(`No books found for category ${categoryId}`);
         }
       })
       .catch(error => {
         // Show error message
-        console.error('Error loading books:', error);
         booksContainer.innerHTML = `
           <div class="no-books-message">
             Error loading books. Please try again later.
@@ -124,16 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookImage = bookCard.querySelector('img').src;
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
-    // Try to get the book description, checking if element exists first
-    let bookDes = "No description available.";
-    const descElement = bookCard.querySelector('.book-des');
-    if (descElement && descElement.textContent && descElement.textContent.trim() !== "No description available.") {
-      bookDes = descElement.textContent;
-      console.log("Found description:", bookDes);
-    } else {
-      console.log("No description found in book card");
-    }
-
+    let bookDes = bookCard.querySelector('.book-des').textContent;
     // Get rating if available, otherwise use placeholder
     let bookRating = "N/A";
     const ratingElement = bookCard.querySelector('.book-rating span');
@@ -494,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     return false;
   }
-  
+
   function createBookCard(book) {
     // Create a new book card element
 

@@ -152,17 +152,17 @@ document.addEventListener("DOMContentLoaded", function() {
       }, 50);
 
       // Add event listeners to the new buttons
-      const borrowBtn = profileBox.querySelector('.profile-borrow-btn');
+      const returnBtn = profileBox.querySelector('.profile-return-btn');
       const buyBtn = profileBox.querySelector('.profile-buy-btn');
 
       // Find the original buttons on the book card
-      const originalBorrowBtn = bookCard.querySelector('.borrow-btn');
+      const originalReturnBtn = bookCard.querySelector('.return-btn');
       const originalBuyBtn = bookCard.querySelector('.buy-btn');
 
       // Link the new buttons to the original buttons' actions
-      if (borrowBtn && originalBorrowBtn) {
-        borrowBtn.addEventListener('click', () => {
-          originalBorrowBtn.click();
+      if (returnBtn && originalReturnBtn) {
+        returnBtn.addEventListener('click', () => {
+          originalReturnBtn.click();
         });
       }
 

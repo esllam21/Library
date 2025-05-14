@@ -1,16 +1,15 @@
 from django.contrib import messages
-from django.contrib.auth import logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views.decorators.http import require_GET, require_POST
 from .models import Members, Books, BorrowedBook, Category, FavouriteBooks, OwnedBooks
-from django.db.models import Count
 from collections import Counter
-
-
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Q
+
+
 
 def categoriesPage(request):
   """View to display all categories and their books"""
@@ -345,30 +344,30 @@ def unauthorized(request):
   return render(request, 'unauthorized.html')
 
 
-def availableBooks(request):
-  # Get all books and ensure they have buyPrice values
-  books = Books.objects.all()
-
-  # Ensure all books have their buyPrice values
-  for book in books:
-    if book.borrowPrice and not book.buyPrice:
-      book.save()  # This will trigger the save() method that calculates buyPrice
-
-  context = {
-    'books': books,
-    'current_member': None
-  }
-
-  # Add current member info if logged in
-  if request.session.get('is_logged_in'):
-    try:
+def returnBook(request, book_id):
+  if request.method == 'POST':
+    if request.session.get('is_logged_in'):
       user_email = request.session.get('user_email')
-      current_member = Members.objects.get(email=user_email)
-      context['current_member'] = current_member
-    except Members.DoesNotExist:
-      pass
+      member = get_object_or_404(Members, email=user_email)
+      book = get_object_or_404(Books, id=book_id)
 
-  return render(request, 'available-books.html', context)
+      # Find the borrowed book record
+      borrowed_book = get_object_or_404(BorrowedBook, member=member, book=book, returned=False)
+
+      # Mark as returned
+      borrowed_book.returned = True
+      borrowed_book.save()
+
+      # Increase the book count
+      book.count = (book.count or 0) - 1
+      book.stock += 1
+      book.save()
+
+      messages.success(request, f"You have successfully returned '{book.title}'.")
+      return redirect(request.META.get('HTTP_REFERER', '/home/borrowedBooks/'))
+    else:
+      return redirect('/home/login/')
+  return redirect(request.META.get('HTTP_REFERER', '/home/borrowedBooks/'))
 
 
 def borrowBook(request, book_id):
@@ -401,37 +400,38 @@ def borrowBook(request, book_id):
       return render(request, 'Home.html')
   return redirect(request.META.get('HTTP_REFERER', '#'))
 
-from django.db.models import Q
+
+
 
 def search_books(request):
-    query = request.GET.get('q', '')
-    
-    if query:
-        # Search for books matching the query in title or author
-        books = Books.objects.filter(
-            Q(title__icontains=query) | 
-            Q(author__icontains=query)
-        ).distinct()
-        
-        # Get favorite books if user is logged in
-        favorite_book_ids = []
-        if request.session.get('is_logged_in'):
-            user_email = request.session.get('user_email')
-            member = get_object_or_404(Members, email=user_email)
-            favorite_book_ids = list(FavouriteBooks.objects.filter(member=member).values_list('book_id', flat=True))
-        
-        return render(request, 'search_results.html', {
-            'books': books,
-            'query': query,
-            'favorite_book_ids': favorite_book_ids,
-            'is_logged_in': request.session.get('is_logged_in', False),
-            'username': request.session.get('username', ''),
-            'user_image': request.session.get('user_image', ''),
-            'stock': request.session.get('stock', ''),
-        })
-    else:
-        # If no query provided, redirect to home
-        return redirect('/home/homePage/')
+  query = request.GET.get('q', '')
+
+  if query:
+    # Search for books matching the query in title or author
+    books = Books.objects.filter(
+      Q(title__icontains=query) |
+      Q(author__icontains=query)
+    ).distinct()
+
+    # Get favorite books if user is logged in
+    favorite_book_ids = []
+    if request.session.get('is_logged_in'):
+      user_email = request.session.get('user_email')
+      member = get_object_or_404(Members, email=user_email)
+      favorite_book_ids = list(FavouriteBooks.objects.filter(member=member).values_list('book_id', flat=True))
+
+    return render(request, 'search_results.html', {
+      'books': books,
+      'query': query,
+      'favorite_book_ids': favorite_book_ids,
+      'is_logged_in': request.session.get('is_logged_in', False),
+      'username': request.session.get('username', ''),
+      'user_image': request.session.get('user_image', ''),
+      'stock': request.session.get('stock', ''),
+    })
+  else:
+    # If no query provided, redirect to home
+    return redirect('/home/homePage/')
 
 
 def buyBook(request, book_id):
@@ -447,12 +447,29 @@ def buyBook(request, book_id):
         messages.info(request, f"You already own '{book.title}'.")
         return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
 
-      if book.stock > 0:
+      # Check if this is a purchase from borrowed books
+      borrowed_book = BorrowedBook.objects.filter(member=member, book=book, returned=False).first()
+
+      if borrowed_book:
+        # If buying a borrowed book, mark it as returned and create an owned record
+        borrowed_book.returned = True
+        borrowed_book.save()
+
+        # Create an OwnedBooks record for this purchase
+        OwnedBooks.objects.create(member=member, book=book)
+
+        # Note: We don't increase the count when buying a borrowed book
+        # We also don't decrease stock since the book was already borrowed
+
+        messages.success(request,
+                         f"You purchased '{book.title}' successfully for ${book.buyPrice or book.calculated_buy_price}.")
+
+      elif book.stock > 0:
+        # Regular purchase flow (not from borrowed books)
         # Create an OwnedBooks record for this purchase
         OwnedBooks.objects.create(member=member, book=book)
         book.count = (book.count or 0) + 1
         # Update stock
-
         book.stock -= 1
         book.save()
 

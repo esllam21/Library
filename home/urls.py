@@ -11,11 +11,11 @@ urlpatterns = [
     path('addBooks/', views.addBooks, name="addBook"),
     path('borrowedBooksAdmin/', views.borrowedBooksAdmin, name="borrowBookAdmin"),
     path('borrowedBooksUser/', views.borrowedBooksUser, name='borrowedBooks'),
-    path('availableBooks/', views.availableBooks, name='availableBooks'),
     path('adminDashboard/', views.adminDashboard, name="adminDashboard"),
     path('unauthorized/', views.unauthorized, name="unauthorized"),
     path('borrow/<int:book_id>/', views.borrowBook, name='borrowBook'),
     path('buy/<int:book_id>/', views.buyBook, name='buyBook'),
+    path('return/<int:book_id>/', views.returnBook, name='returnBook'),
     path('add-favorite/<int:book_id>/', views.addFavorite, name='addFavorite'),
     path('favorites/', views.getFavoriteBooks, name='favorites'),
     path('search/', views.search_books, name='search_books'),
@@ -24,4 +24,5 @@ urlpatterns = [
     path('categories/', views.categoriesPage, name='categories'),
     path('api/books/', views.filter_books_by_category, name='api_books'),
     path('api/books-by-category/<str:category_id>/', views.filter_books_by_category, name='api_books_by_category'),
+
 ]
