@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded", function() {
       </div>
     `;
     
+    // Log the category being loaded
+    console.log(`Loading books for category ID: ${categoryId}`);
+    
     // Define the API endpoint
     const currentPath = window.location.pathname;
     let url;
@@ -26,6 +29,8 @@ document.addEventListener("DOMContentLoaded", function() {
     } else if (currentPath.includes('home/homePage/')) {
       url = `/home/api/filter-books-by-category/?category_id=${categoryId}`;
     }
+    
+    console.log(`Using API endpoint: ${url}`);
     
     // Fetch books from the API
     fetch(url)
@@ -43,6 +48,8 @@ document.addEventListener("DOMContentLoaded", function() {
         if (data.success && data.books && data.books.length > 0) {
           // Create and append book cards
           data.books.forEach(book => {
+                  // Debug log to check what description data we're getting
+                  console.log('Book data:', book.title, 'Description:', book.description);
             // if(book.stock!==0){
             const bookCard = createBookCard(book);
             booksContainer.appendChild(bookCard);
@@ -117,7 +124,15 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookImage = bookCard.querySelector('img').src;
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
-    const bookDes= bookCard.querySelector('.book-des').textContent;
+    // Try to get the book description, checking if element exists first
+    let bookDes = "No description available.";
+    const descElement = bookCard.querySelector('.book-des');
+    if (descElement && descElement.textContent && descElement.textContent.trim() !== "No description available.") {
+      bookDes = descElement.textContent;
+      console.log("Found description:", bookDes);
+    } else {
+      console.log("No description found in book card");
+    }
 
     // Get rating if available, otherwise use placeholder
     let bookRating = "N/A";
@@ -398,6 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="category">${bookCategory}</div>
         <div class="rating">${stars}</div>
         <div class="meta">Author: ${bookAuthor}</div>
+        <div class="meta">${bookDes}</div>        
         
         <div class="meta-row">
           <span class="meta">${pages} Pages</span>
@@ -408,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="meta">Borrow: ${borrowPrice}</div>
         <div class="meta">Purchase: ${buyPrice}</div>
         
-        <p>Click on the buttons below to borrow or buy this book!</p>
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
           <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee;">Borrow</button>
           <button class="profile-buy-btn" style="flex: 1; background-color: #10b981;">Buy</button>
@@ -547,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   <div class="book-price">${borrowPrice}</div>
                   <div class="buy-price">${buyPrice}</div>
                 </div>
-                <div class="book-des" style="display: none;">${book.description||' default:"No description available." '}</div>
+                <div class="book-des" style="display: none;">${book.description || 'No description available.'}</div>
 
               </div>
       

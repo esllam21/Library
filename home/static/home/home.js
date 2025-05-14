@@ -213,69 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize with a small delay to ensure DOM is fully loaded
   setTimeout(initializeFirstBook, 500);
   
-  // Add click events to category tags for smooth transitions
-  if (categoryTags.length > 0) {
-    categoryTags.forEach(tag => {
-      tag.addEventListener('click', function() {
-        const categoryId = this.getAttribute('data-category-id');
-        switchCategory(categoryId, this);
-      });
-    });
-  }
-  
-  // Helper function to filter books by category on home page
-  function filterCategoryBooks(categoryId) {
-    const loadingSpinner = document.createElement('div');
-    loadingSpinner.className = 'loading-spinner';
-    loadingSpinner.innerHTML = '<div class="spinner"></div><p>Loading books...</p>';
-    
-    // Clear current books and show loading
-    booksContainer.innerHTML = '';
-    booksContainer.appendChild(loadingSpinner);
-    
-    // Simulate a small delay for visual feedback
-    setTimeout(() => {
-      // Remove loading spinner
-      booksContainer.innerHTML = '';
-      
-      // Filter books or show all
-      if (categoryId === 'all') {
-        // Show all books up to a limit
-        const allBooks = document.querySelectorAll('.book-card');
-        const booksToShow = Array.from(allBooks).slice(0, 8); // Show first 8 books
-        
-        if (booksToShow.length > 0) {
-          const booksFragment = document.createDocumentFragment();
-          booksToShow.forEach(book => {
-            const bookClone = book.cloneNode(true);
-            booksFragment.appendChild(bookClone);
-          });
-          booksContainer.appendChild(booksFragment);
-        } else {
-          booksContainer.innerHTML = '<div class="no-books-message">No books available.</div>';
-        }
-      } else {
-        // Fetch books by category API endpoint
-        fetch(`/home/api/books-by-category/${categoryId}/`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.books && data.books.length > 0) {
-              data.books.forEach(book => {
-                const bookCard = createBookCard(book);
-                booksContainer.appendChild(bookCard);
-              });
-            } else {
-              booksContainer.innerHTML = '<div class="no-books-message">No books in this category.</div>';
-            }
-          })
-          .catch(error => {
-            console.error('Error fetching category books:', error);
-            booksContainer.innerHTML = '<div class="no-books-message">Error loading books.</div>';
-          });
-      }
-    }, 300);
-  }
-  
+
   // Helper function to fetch books from server on categories page
   document.addEventListener("DOMContentLoaded", function() {
     // Initialize variables
@@ -350,48 +288,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Function to fetch category books
-    function fetchCategoryBooks(categoryId) {
-      const loadingSpinner = document.createElement('div');
-      loadingSpinner.className = 'loading-spinner';
-      loadingSpinner.innerHTML = '<div class="spinner"></div><p>Loading books...</p>';
-
-      // Clear current books and show loading
-      booksContainer.innerHTML = '';
-      booksContainer.appendChild(loadingSpinner);
-
-      // Use the correct API endpoint with query parameter
-      const url = `/home/api/books/?category_id=${categoryId}`;
-
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          booksContainer.innerHTML = '';
-          if (data.books && data.books.length > 0) {
-            data.books.forEach(book => {
-              const bookCard = createBookCard(book);
-              booksContainer.appendChild(bookCard);
-            });
-
-            // Add click events to the newly created book cards
-            const newBookCards = booksContainer.querySelectorAll('.book-card');
-            newBookCards.forEach(bookCard => {
-              bookCard.addEventListener('click', function(e) {
-                if (!e.target.classList.contains('borrow-btn') &&
-                    !e.target.classList.contains('buy-btn')) {
-                  // If you have a profile box, you can update it here
-                  // updateProfileBox(this);
-                }
-              });
-            });
-          } else {
-            booksContainer.innerHTML = '<div class="no-books-message">No books in this category.</div>';
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching category books:', error);
-          booksContainer.innerHTML = '<div class="no-books-message">Error loading books.</div>';
-        });
-    }
 
     // Add click events to category tags
     if (categoryTags && categoryTags.length > 0) {
@@ -436,38 +332,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let isTransitioning = false; // Flag to prevent multiple rapid transitions
   
   // Function to handle category transitions with animation
-  function switchCategory(categoryId, clickedTag) {
-    if (isTransitioning || currentlySelectedCategory === categoryId) return;
-    isTransitioning = true;
-    
-    // Update active tag UI
-    categoryTags.forEach(tag => tag.classList.remove('active'));
-    clickedTag.classList.add('active');
-    
-    // Fade out current content
-    booksContainer.classList.add('category-fade-out');
-    
-    // Wait for fade out to complete before updating content
-    setTimeout(() => {
-      currentlySelectedCategory = categoryId;
-      
-      // Fetch or display books for the selected category
-      if (window.location.pathname.includes('categories')) {
-        // On categories page, fetch from server
-        fetchCategoryBooks(categoryId);
-      } else {
-        // On home page, filter from existing books
-        filterCategoryBooks(categoryId);
-      }
-      
-      // Fade in new content
-      setTimeout(() => {
-        booksContainer.classList.remove('category-fade-out');
-        isTransitioning = false;
-      }, 100);
-    }, 300);
-  }
-  
+
   // Function to create book cards from data
   function createBookCard(book) {
     // Create a new book card element
@@ -600,66 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   
   // Function to fetch books by category
-  async function fetchBooksByCategory(categoryId) {
-    // Show loading state
-    booksContainer.innerHTML = `
-      <div class="loading-spinner">
-        <div class="spinner"></div>
-        <p>Loading books...</p>
-      </div>
-    `;
-    
-    try {
-      const response = await fetch(`/home/api/filter-books-by-category/?category_id=${categoryId}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        // Clear previous content
-        booksContainer.innerHTML = '';
-        
-        if (data.books.length === 0) {
-          // No books found
-          booksContainer.innerHTML = `
-            <div class="no-books-message">
-              <p>No books found in this category.</p>
-            </div>
-          `;
-          return;
-        }
-        
-        // Create and append book cards
-        data.books.forEach(book => {
-          const bookCard = createBookCard(book);
-          booksContainer.appendChild(bookCard);
-        });
-        
-        // Make the first book active to show in the profile box
-        if (data.books.length > 0) {
-          const firstBookCard = booksContainer.querySelector('.book-card');
-          if (firstBookCard) {
-            setTimeout(() => {
-              firstBookCard.click();
-            }, 300);
-          }
-        }
-      } else {
-        // Error fetching books
-        booksContainer.innerHTML = `
-          <div class="no-books-message">
-            <p>Error loading books. Please try again later.</p>
-          </div>
-        `;
-      }
-    } catch (error) {
-      console.error('Error fetching books:', error);
-      booksContainer.innerHTML = `
-        <div class="no-books-message">
-          <p>Error loading books. Please try again later.</p>
-        </div>
-      `;
-    }
-  }
-  
+
   // Set up event listeners for category tags
   categoryTags.forEach(tag => {
     tag.addEventListener('click', function() {
@@ -679,6 +485,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   
   // Initialize with "All" category selected
-  fetchBooksByCategory('all');
 });
 
