@@ -1,57 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
-    <head>
-        <link rel="shortcut icon" type="x-icon" href="assets/parthenon-svgrepo-com (1).svg">
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sign Up | ReadIt</title>
-        <link rel="stylesheet" href="{% static 'home/signup.css' %}">
-        <script src="{% static 'home/signup.js' %}"></script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up | ReadIt</title>
+  <link rel="stylesheet" href="{% static 'home/signup.css' %}">
+  <link rel="shortcut icon" type="image/x-icon" href="{% static 'assets/parthenon-svgrepo-com (1).svg' %}">
+</head>
+<body>
+  <div class="signup-container">
+    <div class="signup-card">
+      <div class="signup-header">
+        <h2>Join ReadIt</h2>
+        <p>Already have an account? <a href="/home/login/">Login here</a></p>
+      </div>
 
-    </head>
-    <body>
-        <nav>
-            <ul>
-                <li><a id="Home" href="/home/homePage">readit</a></li>
-            </ul>
-        </nav>
-        <div class="mainWindow">
-            <div class="formWindow">
-                <div class="form">
-                    <a href="/home/homePage">
-                        <img id="backArrow" src="assets/back-arrow-navigation-svgrepo-com.svg" alt="Back to Home Page">
-                    </a>
-                    <h1 id="signup-header">Sign Up</h1>
-                    <p class="login-para">Already a member? <a id="login" href="/home/login/">Login Here.</a></p>
-                    <form id="signup-form" action="">
-                        <input type="text" name="First Name" placeholder="First Name" required>
-                        <input type="text" name="Last Name" placeholder="Last Name">
-                        <input type="email" name="Email" placeholder="Email" required>
-                        <input type="password" name="Password" placeholder="Password" required id="password">
-                        <input type="password" name="Confirm Password" placeholder="Confirm Password" required id="confirmPassword">
-                        <p id="errorMsg" style="color: red; display: none;">Password isn't a match</p>
-                        <div class="radio">
-                            <input class="radio-input" type="radio" value="Publisher" name="user-type" id="Publisher">
-                            <label class="radio-label" for="Publisher"><ion-icon name="pencil-outline"></ion-icon>Admin</label>
-                            <input class="radio-input" type="radio" value="Customer" name="user-type" id="Customer">
-                            <label class="radio-label" for="Customer"><ion-icon name="book-outline"></ion-icon>Customer/publisher</label>
-                        </div>
-                        <input id="submit" type="submit">
-                        <br>
-                        <span id="error-messages"></span>
-                    </form>
-                </div>
-                <div class="imageSlide">
-                    <div class="image-container">
-                        <img id="slide-1" src="assets/Rebecca Mock Illustrates.gif" alt="Image 1">
-                    </div>
-                    <div class="image-para">
-                        <p>Join us in unlocking the gateway to endless knowledge and imagination.
-                            Sign up today and embark on a journey of literary adventure at ReadIt!</p>
-                    </div>
-                </div>
-            </div>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <input type="text" name="first_name" placeholder="First Name" required>
+          <input type="text" name="last_name" placeholder="Last Name">
         </div>
-    </body>
+
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="text" name="phone" placeholder="Phone Number" required>
+        <input type="password" name="password" placeholder="Password" required id="password">
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required id="confirmPassword">
+
+        <div id="errorMsg" class="error-text">Passwords do not match</div>
+
+        <div class="user-type">
+          <label>
+            <input type="radio" name="user_type" value="Admin" required> Admin
+          </label>
+          <label>
+            <input type="radio" name="user_type" value="Customer"> Customer
+          </label>
+        </div>
+
+        <input type="file" name="image" class="image-upload">
+
+        <button type="submit" class="submit-btn">Create Account</button>
+      </form>
+    </div>
+  </div>
+  <script src="{% static 'home/signup.js' %}"></script>
+</body>
 </html>

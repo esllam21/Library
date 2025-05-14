@@ -24,7 +24,7 @@
         <div class="form-container log-in">
             <form id="login-form" method="POST"   action="{% url 'login' %}" >
                 {% csrf_token %}
-                <h1>Login</h1>
+                <h1>Welcome Back!</h1>
                 <div class="input-box">
                     <input type="email" placeholder="Email" name="email" required>
                     <div class="username-icon"><i class='bx bxs-user'></i></div>
@@ -43,16 +43,6 @@
                     <p>Don't have an account? <a href="/home/signup/">Sign up</a></p>
                 </div>
             </form>
-        </div>
-        <div class="welcome-container">
-            <div class="welcome">
-                <h1>Welcome Back!</h1>
-                <div class="imageSlide">
-                    <div class="image-container">
-                        <img id="slide-1" src="assets/Ciao,%20Salut.gif" alt="Image 1">
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

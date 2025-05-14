@@ -81,7 +81,7 @@ class Members(models.Model):
   username = models.CharField(max_length=255, unique=True)
   email = models.EmailField(unique=True)
   password = models.CharField(max_length=255)
-  phone = models.CharField(max_length=20, unique=True)
+  phone = models.CharField(max_length=20, unique=True, null=True)
   image = models.ImageField(upload_to='user-images/', blank=True, null=True)
   user_type = models.CharField(max_length=10, choices=USER_TYPES)
 

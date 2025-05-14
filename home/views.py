@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
@@ -209,7 +210,7 @@ def login(request):
       if user.user_type == 'Admin':
         return redirect('/home/adminDashboard/')
       else:
-        return redirect('/home/availableBooks/')
+        return redirect('/home/homePage/')
     except Members.DoesNotExist:
       messages.error(request, "Invalid email or password.")
 
@@ -222,8 +223,37 @@ def Logout(request):
 
 
 def signup(request):
-  template = loader.get_template('signup.html')
-  return HttpResponse(template.render({}, request))
+  if request.method == 'POST':
+    first_name = request.POST.get('first_name')
+    last_name = request.POST.get('last_name')
+    username = request.POST.get('username')
+    email = request.POST.get('email')
+    password = request.POST.get('password')
+    phone = request.POST.get('phone')
+    user_type = request.POST.get('user_type')
+    image = request.FILES.get('image')
+
+    # تشفير الباسورد
+
+    try:
+      member = Members.objects.create(
+        first_name=first_name,
+        last_name=last_name,
+        username=username,
+        email=email,
+        password=password,
+        phone=phone,
+        user_type=user_type,
+        image=image
+      )
+      member.save()
+      messages.success(request, 'تم التسجيل بنجاح! ادخل على اللوجين.')
+      return redirect('login')  # غير دي حسب اسم صفحة اللوجين عندك
+    except Exception as e:
+      messages.error(request, f'فيه مشكلة في التسجيل: {str(e)}')
+      return render(request, 'signup.html')
+
+  return render(request, 'signup.html')
 
 
 def borrowedBooksUser(request):
