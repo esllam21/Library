@@ -592,7 +592,8 @@ def all_filter_books_by_category(request, category_id=None):
         'category': category_name,
         'pageCount': book.pageCount,
         'ratingCount': book.ratingCount or 0,
-        'stock': book.stock
+        'stock': book.stock,
+        'description': book.description,
       })
 
     return JsonResponse({
@@ -691,7 +692,8 @@ def filter_books_by_category(request, category_id=None):
         'pageCount': book.pageCount,
         'ratingCount': book.ratingCount or 0,
         'is_favorite': is_favorite,
-        'stock': book.stock
+        'stock': book.stock,
+        'description': book.description,
       })
 
     return JsonResponse({
