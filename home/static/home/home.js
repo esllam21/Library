@@ -145,8 +145,12 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="meta">Purchase: ${buyPrice}</div>
         
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-          <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee;">Borrow</button>
-          <button class="profile-buy-btn" style="flex: 1; background-color: #10b981;">Buy</button>
+                ${
+                    document.body.getAttribute('data-user-type') === 'Admin' ? `
+                      <button class="profile-borrow-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
+                      <button class="profile-buy-btn" style="flex: 1; background-color: #ff5151">Delete</button>`
+                        : `<button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
+                          <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>`}
         </div>
       `;
       

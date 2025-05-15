@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const favouritesBtn = document.getElementById('favourites-btn');
   const settingsBtn = document.getElementById('settings-btn');
   const supportBtn = document.getElementById('support-btn');
+  const loginBtn = document.getElementById('login-btn');
+  if(loginBtn){
+      loginBtn.addEventListener('click',function(){
+          window.location.href="/home/login/"
+      })
+  }
   if (homeBtn) {
       homeBtn.addEventListener('click', function () {
           window.location.href = "/home/homePage/";

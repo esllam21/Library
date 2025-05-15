@@ -58,6 +58,13 @@
           <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
           <span class="label">Favourites</span>
         </li>
+        {% if userType == 'Admin' %}
+          <li id="addBook-btn">
+            <span class="icon-wrapper"><i class="ph ph-plus"></i></span>
+            <span class="label">Add Book</span>
+          </li>
+        {% endif %}
+
         <div style="height: 20px;"></div>
 
         <li id="settings-btn">
@@ -68,10 +75,16 @@
           <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
           <span class="label">Support</span>
         </li>
-        <li id="logout-btn">
-          <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
-          <span class="label">Logout</span>
-        </li>
+        {% if is_logged_in %}
+          <li id="logout-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+            <span class="label">Logout</span>
+          </li>
+        {% else %}
+          <li id="login-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-in"></i></span>
+            <span class="label">Sign in</span>
+        {% endif %}
       </ul>
     </div>
     <!-- Middle: Main Content -->

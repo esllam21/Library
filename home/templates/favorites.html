@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
 </head>
-<body data-logged-in="{{ is_logged_in|lower }}">
+<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
@@ -58,6 +58,13 @@
           <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
           <span class="label">Favourites</span>
         </li>
+        {% if userType == 'Admin' %}
+          <li id="addBook-btn">
+            <span class="icon-wrapper"><i class="ph ph-plus"></i></span>
+            <span class="label">Add Book</span>
+          </li>
+        {% endif %}
+
         <div style="height: 20px;"></div>
 
         <li id="settings-btn">
@@ -68,10 +75,16 @@
           <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
           <span class="label">Support</span>
         </li>
-        <li id="logout-btn">
-          <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
-          <span class="label">Logout</span>
-        </li>
+        {% if is_logged_in %}
+          <li id="logout-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+            <span class="label">Logout</span>
+          </li>
+        {% else %}
+          <li id="login-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-in"></i></span>
+            <span class="label">Sign in</span>
+        {% endif %}
       </ul>
     </div>
 
@@ -144,6 +157,8 @@
                       <div class="book-price">${{ favorite.book.borrowPrice }}</div>
                       <div class="buy-price">${{ favorite.book.buyPrice|default:favorite.book.calculated_buy_price }}</div>
                     </div>
+                    <div class="book-des" style="display: none;">{{ favorite.book.description|default:"No description available." }}</div>
+
                   </div>
                 </div>
               {% endfor %}

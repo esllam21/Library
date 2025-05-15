@@ -596,16 +596,16 @@ def getFavoriteBooks(request):
   if not request.session.get('is_logged_in'):
     messages.error(request, "Please log in to view favorites")
     return redirect('/home/login/')
-
+  userType=None
+  user_image = None
+  username = None
+  user = None
   try:
-    user_email = request.session.get('user_email')
-    member = get_object_or_404(Members, email=user_email)
-    favorite_books = FavouriteBooks.objects.filter(member=member).select_related('book')
-    userType=member.user_type
-
-    user_image = member.image.url if member.image else '/static/images/default-user.png'
-    username = member.username
-
+    user = Members.objects.get(email=request.session.get('user_email'))
+    favorite_books = FavouriteBooks.objects.filter(member=user).select_related('book')
+    userType=user.user_type
+    user_image = user.image.url if user.image else '/static/images/default-user.png'
+    username = user.username
     # Get favorite book IDs for heart icon display
     favorite_book_ids = list(favorite_books.values_list('book_id', flat=True))
 

@@ -221,12 +221,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="book-card-img">
                             <img src="${book.image}" alt="${book.title}">
                             <div class="action-buttons">
-                                <a href="/home/borrow/${book.id}/" onclick="event.preventDefault(); document.getElementById('borrow-form-cat-${book.id}').submit();">
-                                    <button class="borrow-btn">Borrow</button>
-                                </a>
-                                <a href="/home/buy/${book.id}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-${book.id}').submit();">
-                                    <button class="buy-btn">Buy</button>
-                                </a>
+                      
+                        ${document.body.getAttribute('data-user-type') === 'Admin' ? `
+                        <a href="/home/borrow/${book.id}/" onclick="event.preventDefault(); document.getElementById('borrow-form-cat-${book.id}').submit();">
+                            <button class="borrow-btn">Edit</button>
+                        </a>
+                        <a href="/home/buy/${book.id}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-${book.id}').submit();">
+                            <button class="buy-btn">Delete</button>
+                        </a>`
+                        : `<a href="/home/borrow/${book.id}/" onclick="event.preventDefault(); document.getElementById('borrow-form-cat-${book.id}').submit();">
+                              <button class="borrow-btn">Borrow</button>
+                           </a>
+                           <a href="/home/buy/${book.id}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-${book.id}').submit();">
+                              <button class="buy-btn">Buy</button>
+                           </a>`}
+
                             </div>
                             <form id="borrow-form-cat-${book.id}" action="/home/borrow/${book.id}/" method="post" style="display: none;">
                                 <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}">
@@ -400,8 +409,13 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="meta">Purchase: ${buyPrice}</div>
         
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-          <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee;">Borrow</button>
-          <button class="profile-buy-btn" style="flex: 1; background-color: #10b981;">Buy</button>
+                ${
+                    document.body.getAttribute('data-user-type') === 'Admin' ? `
+                      <button class="profile-borrow-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
+                      <button class="profile-buy-btn" style="flex: 1; background-color: #ff5151">Delete</button>`
+                        : `<button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
+                          <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>`}
+
         </div>
       `;
 
