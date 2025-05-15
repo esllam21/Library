@@ -510,10 +510,14 @@ document.addEventListener('DOMContentLoaded', function() {
     bookCard.innerHTML = `
           <div class="book-card-img">
             <img src="${book.image}" alt="${book.title}">
-            <div class="action-buttons">
-              <button class="borrow-btn">Borrow</button>
-              <button class="buy-btn">Buy</button>
-            </div>
+              <div class="action-buttons">
+                ${
+                    document.body.getAttribute('data-user-type') === 'Admin' ? `
+                      <button class="borrow-btn">Edit</button>
+                      <button class="buy-btn">Delete</button>`
+                        : `<button class="borrow-btn">Borrow</button>
+                          <button class="buy-btn">Buy</button>`}
+              </div>
           </div>
           <div class="book-card-content">
                 <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">

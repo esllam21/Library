@@ -98,12 +98,22 @@
                       <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ borrow.book.title }}">
                     {% endif %}
                     <div class="action-buttons">
-                      <a href="/home/return/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('return-form-{{ borrow.book.id }}').submit();">
-                        <button class="return-btn">Return</button>
-                      </a>
-                      <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
-                        <button class="buy-btn">Buy</button>
-                      </a>
+                      {% if userType == 'Customer' %}
+                        <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
+                          <button class="borrow-btn">Borrow</button>
+                        </a>
+                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                          <button class="buy-btn">Buy</button>
+                        </a>
+
+                      {% else %}
+                        <a href="/home/borrow/{{ book.id }}">
+                          <button class="edit-btn">Edit</button>
+                        </a>
+                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                          <button class="delete-btn">Delete</button>
+                        </a>
+                      {% endif %}
                     </div>
                     <form id="return-form-{{ borrow.book.id }}" action="/home/return/{{ borrow.book.id }}/" method="post" style="display: none;">
                       {% csrf_token %}

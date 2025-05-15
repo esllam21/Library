@@ -21,6 +21,7 @@ def categoriesPage(request):
 
   user_image = None
   username = None
+  userType=None
   favorite_book_ids = []
 
   if request.session.get('is_logged_in'):
@@ -28,6 +29,7 @@ def categoriesPage(request):
       user = Members.objects.get(email=request.session.get('user_email'))
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
+      userType = user.user_type
 
       # Get user's favorite books
       favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
@@ -42,6 +44,7 @@ def categoriesPage(request):
     'user_image': user_image,
     'username': username,
     'favorite_book_ids': list(favorite_book_ids),
+    'userType': userType,
   })
 
 
@@ -263,6 +266,7 @@ def borrowedBooksUser(request):
   user_image = None
   username = None
   user = None
+  userType=None
   favorite_book_ids = []
 
   if request.session.get('is_logged_in'):
@@ -271,6 +275,7 @@ def borrowedBooksUser(request):
       user = get_object_or_404(Members, email=user_email)
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
+      userType= user.user_type
 
       # Get user's borrowed and owned books
       borrowed_books = BorrowedBook.objects.filter(member=user, returned=False)
@@ -303,6 +308,7 @@ def borrowedBooksUser(request):
     'owned_books': owned_books,
     'categories': categories,
     'favorite_book_ids': list(favorite_book_ids),
+    'userType': userType,
   })
 
 
@@ -455,6 +461,12 @@ def borrowBook(request, book_id):
 
 
 def search_books(request):
+  userType = None
+  user_image = None
+  username = None
+  favorite_book_ids = []
+  user = None
+  stock=None
   query = request.GET.get('q', '')
 
   if query:
@@ -465,20 +477,22 @@ def search_books(request):
     ).distinct()
 
     # Get favorite books if user is logged in
-    favorite_book_ids = []
     if request.session.get('is_logged_in'):
-      user_email = request.session.get('user_email')
-      member = get_object_or_404(Members, email=user_email)
-      favorite_book_ids = list(FavouriteBooks.objects.filter(member=member).values_list('book_id', flat=True))
-
+      user = Members.objects.get(email=request.session.get('user_email'))
+      favorite_book_ids = list(FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True))
+      userType=user.user_type
+      user_image = user.image.url if user.image else '/static/images/default-user.png'
+      username = user.username
+      stock=request.session.get('stock')
     return render(request, 'search_results.html', {
       'books': books,
       'query': query,
       'favorite_book_ids': favorite_book_ids,
       'is_logged_in': request.session.get('is_logged_in', False),
-      'username': request.session.get('username', ''),
-      'user_image': request.session.get('user_image', ''),
-      'stock': request.session.get('stock', ''),
+      'username': username,
+      'user_image': user_image,
+      'stock': stock,
+      'userType': userType,
     })
   else:
     # If no query provided, redirect to home
@@ -587,6 +601,7 @@ def getFavoriteBooks(request):
     user_email = request.session.get('user_email')
     member = get_object_or_404(Members, email=user_email)
     favorite_books = FavouriteBooks.objects.filter(member=member).select_related('book')
+    userType=member.user_type
 
     user_image = member.image.url if member.image else '/static/images/default-user.png'
     username = member.username
@@ -600,6 +615,7 @@ def getFavoriteBooks(request):
       'username': username,
       'favorite_books': favorite_books,
       'favorite_book_ids': favorite_book_ids,
+      'userType': userType,
     })
 
   except Members.DoesNotExist:

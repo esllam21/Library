@@ -100,12 +100,22 @@
                       <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
                     {% endif %}
                     <div class="action-buttons">
-                      <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
-                        <button class="borrow-btn">Borrow</button>
-                      </a>
-                      <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
-                        <button class="buy-btn">Buy</button>
-                      </a>
+                      {% if userType == 'Customer' %}
+                        <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
+                          <button class="borrow-btn">Borrow</button>
+                        </a>
+                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                          <button class="buy-btn">Buy</button>
+                        </a>
+
+                      {% else %}
+                        <a href="/home/borrow/{{ book.id }}">
+                          <button class="edit-btn">Edit</button>
+                        </a>
+                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                          <button class="delete-btn">Delete</button>
+                        </a>
+                      {% endif %}
                     </div>
                     <form id="borrow-form-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
                       {% csrf_token %}
@@ -140,6 +150,8 @@
                       <div class="book-price">${{ book.borrowPrice }}</div>
                       <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
                     </div>
+                    <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
+
                   </div>
                 </div>
               {% endfor %}
