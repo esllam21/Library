@@ -121,7 +121,7 @@ body {
   opacity: 1;
 }
 
-.borrow-btn, .buy-btn, .return-btn {
+.borrow-btn, .buy-btn, .return-btn, .edit-btn, .delete-btn{
   color: white;
   border: none;
   padding: 8px 12px;
@@ -144,34 +144,37 @@ body {
 
 .book-card:hover .borrow-btn, 
 .book-card:hover .buy-btn,
-.book-card:hover .return-btn{
+.book-card:hover .return-btn,
+.book-card:hover .edit-btn,
+.book-card:hover .delete-btn
+{
   transform: translateY(0) scale(1);
   opacity: 1;
 }
 
-.borrow-btn {
+.borrow-btn,.edit-btn {
   background-color: #4361ee;
 }
 
-.borrow-btn:hover {
+.borrow-btn:hover, .edit-btn:hover {
   background-color: #3a56d4;
   box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
 }
 
-.buy-btn {
+.buy-btn{
   background-color: #10b981;
   box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
-.buy-btn:hover {
+.buy-btn:hover{
   background-color: #059669;
   box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4);
 }
-.return-btn {
+.return-btn, .delete-btn {
   background-color: #ff5151;
   box-shadow: 0 4px 10px rgba(255, 81, 81, 0.3);
 }
-.return-btn:hover{
+.return-btn:hover, .delete-btn:hover{
   background-color: #e64848;
   box-shadow: 0 6px 15px rgba(230, 72, 72, 0.4);
 }

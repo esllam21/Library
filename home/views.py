@@ -133,6 +133,7 @@ def get_recommended_books(user, limit=12):
 
 
 def homePage(request):
+  userType=None
   user_image = None
   username = None
   user = None
@@ -144,6 +145,7 @@ def homePage(request):
       user = Members.objects.get(email=request.session.get('user_email'))
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
+      userType= user.user_type
 
       # Get personalized book recommendations if user is logged in
       recommended_books = get_recommended_books(user)
@@ -192,6 +194,7 @@ def homePage(request):
     'has_recommendations': len(recommended_books) > 0,
     'categories': categories,
     'favorite_book_ids': list(favorite_book_ids),
+    'userType': userType,
   })
 
 
@@ -313,8 +316,26 @@ def borrowedBooksAdmin(request):
 
 
 def adminDashboard(request):
-  template = loader.get_template('admin-dashboard.html')
-  return HttpResponse(template.render({}, request))
+  user_image = None
+  username = None
+  user=None
+
+  if request.session.get('is_logged_in'):
+    try:
+      user = Members.objects.get(email=request.session.get('user_email'))
+      user_image = user.image.url if user.image else '/static/images/default-user.png'
+      username = user.username
+
+      # Get user's favorite books
+    except Members.DoesNotExist:
+      pass
+    except Exception as e:
+      print(f"Error getting user details: {e}")
+  return render(request, 'admin-dashboard.html', {
+    'is_logged_in': request.session.get('is_logged_in', False),
+    'user_image': user_image,
+    'username': username,
+  })
 
 
 def addBooks(request):
