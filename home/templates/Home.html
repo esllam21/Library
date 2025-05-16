@@ -121,7 +121,7 @@
                         </a>
 
                       {% else %}
-                        <a href="/home/borrow/{{ book.id }}">
+                        <a href="/home/edit/{{ book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
                         <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
@@ -200,7 +200,7 @@
                           <button class="buy-btn">Buy</button>
                         </a>
                       {% else %}
-                        <a href="/home/borrow/{{ book.id }}">
+                        <a href="/home/edit/{{ book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
                         <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">

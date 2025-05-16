@@ -9,6 +9,8 @@ from collections import Counter
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
+from .forms import BookForm  # تأكد إنه موجود في forms.py
+
 
 
 
@@ -791,3 +793,43 @@ def filter_books_by_category(request, category_id=None):
       'success': False,
       'error': str(e)
     }, status=500)
+
+
+def edit_books(request, book_id):
+    userType = None
+    user_image = None
+    username = None
+    user = None
+
+    # نجيب بيانات اليوزر لو لوج إن
+    if request.session.get('is_logged_in'):
+        try:
+            user = Members.objects.get(email=request.session.get('user_email'))
+            user_image = user.image.url if user.image else '/static/images/default-user.png'
+            username = user.username
+            userType = user.user_type
+        except Members.DoesNotExist:
+            return None
+        except Exception as e:
+            print(f"Error getting user details: {e}")
+
+    # نجيب الكتاب المطلوب تعديله
+    book = get_object_or_404(Books, id=book_id)
+
+    # لو الفورم submitted
+    if request.method == 'POST':
+        form = BookForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('homepage')  # غيرها حسب اسم صفحة التفاصيل عندك
+    else:
+        form = BookForm(instance=book)
+
+    return render(request, 'edit-book.html', {
+        'form': form,
+        'is_logged_in': request.session.get('is_logged_in', False),
+        'user_image': user_image,
+        'username': username,
+        'userType': userType,
+    })
+

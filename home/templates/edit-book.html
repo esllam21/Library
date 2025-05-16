@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <title>BookBase</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
+</head>
+<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
+  <!-- Top Navbar -->
+  <div class="navbar">
+    <h2 class="logo">ReadIT</h2>
+    <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
+    <div class="search-input">
+      <input type="text" placeholder="Search your favourite books...">
+    </div>
+    <div class="profile">
+      <span class="notification"><i class="ph ph-bell"></i></span>
+
+      {% if is_logged_in %}
+        <div class="user-profile">
+          <img src="{{ user_image }}" alt="{{ username }}">
+          <span class="username">{{ username }}</span>
+        </div>
+      {% else %}
+        <a href="{% url 'login' %}" class="sign-in-btn">
+          <i class="ph ph-sign-in"></i>
+          <span>Sign In</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Main Layout: Sidebar + Content + Profile Box -->
+  <div class="main-content-area">
+    <!-- Left: Sidebar -->
+    <div class="sidebar">
+      <ul>
+        <li class="active" id="home-btn">
+          <span class="icon-wrapper"><i class="ph ph-house"></i></span>
+          <span class="label">Discover</span>
+        </li>
+        <li id="categories-btn">
+          <span class="icon-wrapper"><i class="ph ph-notebook"></i></span>
+          <span class="label">Category</span>
+        </li>
+        <li id="borrowed-btn">
+          <span class="icon-wrapper"><i class="ph ph-book-open"></i></span>
+          <span class="label">My Library</span>
+        </li>
+        <li id="favourites-btn">
+          <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
+          <span class="label">Favourites</span>
+        </li>
+        {% if userType == 'Admin' %}
+          <li id="addBook-btn">
+            <span class="icon-wrapper"><i class="ph ph-plus"></i></span>
+            <span class="label">Add Book</span>
+          </li>
+        {% endif %}
+
+        <div style="height: 20px;"></div>
+
+        <li id="settings-btn">
+          <span class="icon-wrapper"><i class="ph ph-gear"></i></span>
+          <span class="label">Settings</span>
+        </li>
+        <li id="support-btn">
+          <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
+          <span class="label">Support</span>
+        </li>
+        {% if is_logged_in %}
+          <li id="logout-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+            <span class="label">Logout</span>
+          </li>
+        {% else %}
+          <li id="login-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-in"></i></span>
+            <span class="label">Sign in</span>
+        {% endif %}
+        <div style="height: 20px"></div>
+      </ul>
+    </div>
+    <!-- Middle: Main Content -->
+    <div class="content-wrapper">
+      <div class="main">
+<form method="post">
+  {% csrf_token %}
+{% for field in form %}
+  <div class="featured">
+    <div class="section-header">
+      <h3>{{ field.label }}</h3>
+      {% if field.errors %}
+        <div class="errorlist">{{ field.errors }}</div>
+      {% endif %}
+    </div>
+      {{ field }}
+  </div>
+{% endfor %}
+  <button type="submit">Save Changes</button>
+</form>
+      </div>
+    </div>
+  <script src="{% static 'home/category-loader.js' %}"></script>
+  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+  <script src="{% static 'home/navbar.js' %}"></script>
+  <script>
+    // Make favorite book IDs available to JavaScript
+    window.favorite_book_ids = {{ favorite_book_ids|safe }};
+  </script>
+</body>
+</html>

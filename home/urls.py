@@ -24,5 +24,6 @@ urlpatterns = [
     path('categories/', views.categoriesPage, name='categories'),
     path('api/books/', views.filter_books_by_category, name='api_books'),
     path('api/books-by-category/<str:category_id>/', views.filter_books_by_category, name='api_books_by_category'),
+    path('edit/<int:book_id>', views.edit_books, name='editBook'),
 
 ]
