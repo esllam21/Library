@@ -119,6 +119,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Get prices
     const borrowPrice = bookCard.querySelector('.book-price')?.textContent || "$0.00";
     const buyPrice = bookCard.querySelector('.buy-price')?.textContent || "$0.00";
+    const id = bookCard.querySelector('.book-id')?.textContent || "$0.00";
 document.addEventListener('DOMContentLoaded', function() {
     const tagsContainer = document.querySelector('.tags-container');
     const categoryBooksContainer = document.getElementById('category-books-container');
@@ -411,14 +412,16 @@ document.addEventListener('DOMContentLoaded', function() {
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
                 ${
                     document.body.getAttribute('data-user-type') === 'Admin' ? `
-                      <button class="profile-borrow-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
+                      <button class="profile-edit-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
                       <button class="profile-buy-btn" style="flex: 1; background-color: #ff5151">Delete</button>`
                         : `<button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
                           <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>`}
 
         </div>
       `;
-
+      document.querySelector(".profile-edit-btn").onclick = function () {
+          window.location.href = `/home/edit/${id}`;
+        };
       // Remove fade class to trigger fade-in animation
       setTimeout(() => {
         profileBox.classList.remove('profile-box-fade');
@@ -519,6 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const buyPrice = book.buyPrice.toString().includes('$') ?
       book.buyPrice :
       `$${book.buyPrice.toFixed(2)}`;
+    const id = book.id
 
     // Set up the inner HTML of the book card
     bookCard.innerHTML = `
@@ -527,7 +531,10 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="action-buttons">
                 ${
                     document.body.getAttribute('data-user-type') === 'Admin' ? `
-                      <button class="borrow-btn">Edit</button>
+                      <a href="/home/edit/${book.id}">
+                        <button class="borrow-btn">Edit</button>
+                      
+                      </a>
                       <button class="buy-btn">Delete</button>`
                         : `<button class="borrow-btn">Borrow</button>
                           <button class="buy-btn">Buy</button>`}
@@ -554,6 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="book-prices">
                   <div class="book-price">${borrowPrice}</div>
                   <div class="buy-price">${buyPrice}</div>
+                  <div class="book-id" style="display: none">${id}</div>
                 </div>
                 <div class="book-des" style="display: none;">${book.description || 'No description available.'}</div>
 

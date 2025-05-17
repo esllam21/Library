@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
 </head>
-<body data-logged-in="{{ is_logged_in|lower }}">
+<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
@@ -162,6 +162,7 @@
                     <div class="book-prices">
                       <div class="book-price">${{ book.borrowPrice }}</div>
                       <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
+                      <div class="book-id" style="display: none">{{ book.id }}</div>
                     </div>
                     <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
 

@@ -161,6 +161,7 @@
                     <div class="book-prices">
                       <div class="book-price">${{ book.borrowPrice }}</div>
                       <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
+                      <div class="book-id" style="display: none">{{ book.id }}</div>
                     </div>
                     <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
 
@@ -240,6 +241,8 @@
                     <div class="book-prices">
                       <div class="book-price">${{ book.borrowPrice }}</div>
                       <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
+                      <div class="book-id" style="display: none">{{ book.id }}</div>
+
                     </div>
                     <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
 

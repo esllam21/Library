@@ -156,6 +156,7 @@
                     <div class="book-prices">
                       <div class="book-price">${{ favorite.book.borrowPrice }}</div>
                       <div class="buy-price">${{ favorite.book.buyPrice|default:favorite.book.calculated_buy_price }}</div>
+                      <div class="book-id" style="display: none">{{ favorite.book.id }}</div>
                     </div>
                     <div class="book-des" style="display: none;">{{ favorite.book.description|default:"No description available." }}</div>
 
