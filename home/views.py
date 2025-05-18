@@ -93,7 +93,7 @@ def categoriesPage(request):
   })
 
 
-def get_recommended_books(user, limit=20):
+def getRecommendedBooks(user, limit=20):
   try:
     borrowed_books = BorrowedBook.objects.filter(member=user)
     owned_books = OwnedBooks.objects.filter(member=user)
@@ -171,7 +171,7 @@ def homePage(request):
         total+= borrowed.book.borrowPrice
       for owned in ownedBooks:
         total+=owned.book.buyPrice
-      recommended_books = get_recommended_books(user)
+      recommended_books = getRecommendedBooks(user)
       for book in recommended_books:
         if book.borrowPrice and not book.buyPrice:
           book.save()
@@ -460,7 +460,7 @@ def borrowBook(request, book_id):
     return render(request, 'Home.html')
 
 
-def search_books(request):
+def searchBooks(request):
   borrowed_book_ids = []
   owned_book_ids = []
   userType = None
@@ -606,7 +606,7 @@ def getFavoriteBooks(request):
   return redirect('/home/homePage/')
 
 
-def edit_books(request, book_id):
+def editBooks(request, book_id):
   userType = None
   user_image = None
   username = None
@@ -647,13 +647,13 @@ def edit_books(request, book_id):
   })
 
 
-def delete_books(request, book_id):
+def deleteBooks(request, book_id):
   book = Books.objects.get(id=book_id)
   book.delete()
   return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
 
 
-def borrowed_books_view(request):
+def borrowedBooksView(request):
   userType = None
   user_image = None
   username = None
