@@ -13,10 +13,8 @@ class Command(BaseCommand):
             'Technology', 'Art', 'Cooking', 'Travel', 'Religion'
         ]
         
-        # Get existing category names
         existing_categories = set(Category.objects.values_list('name', flat=True))
         
-        # Create missing categories
         categories_created = 0
         for cat_name in default_categories:
             if cat_name not in existing_categories:
@@ -24,20 +22,17 @@ class Command(BaseCommand):
                 categories_created += 1
                 self.stdout.write(f"Created category: {cat_name}")
         
-        # Extract unique categories from existing books
         book_categories = set(
             cat for cat in Books.objects.values_list('category', flat=True) 
             if cat is not None and cat.strip() != ''
         )
         
-        # Create categories from books if they don't exist
         for cat_name in book_categories:
             if cat_name not in existing_categories and cat_name not in default_categories:
                 Category.objects.create(name=cat_name)
                 categories_created += 1
                 self.stdout.write(f"Created category from book: {cat_name}")
         
-        # Update books to use the category relationship
         books_updated = 0
         for book in Books.objects.filter(book_category__isnull=True):
             if book.category:

@@ -19,7 +19,7 @@ body {
   display: flex;
   flex: 1;
   position: relative;
-  height: calc(100vh - 77px); /* Adjust based on navbar height */
+  height: calc(100vh - 77px);
   overflow: hidden;
 }
 
@@ -225,7 +225,6 @@ body {
   background-repeat: no-repeat;
 }
 
-/* === CATEGORIES === */
 
 .categories-section {
   margin-top: 5px;
@@ -259,9 +258,7 @@ body {
   background-color: #c7d2fe;
   transform: translateY(-2px);
 }
-/* If this file already exists, add these styles to it. If it doesn't exist, create it with these styles */
 
-/* Favorite icon styles */
 .ph-heart-straight {
   cursor: pointer;
   color: #888;
@@ -276,7 +273,6 @@ body {
   color: #ff5151 !important;
 }
 
-/* Loading spinner styles */
 .loading-spinner {
   display: flex;
   flex-direction: column;
@@ -301,7 +297,6 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* Empty state styles */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -332,7 +327,6 @@ body {
   background-color: #2980b9;
 }
 
-/* Category fade-in animation */
 .category-fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }
@@ -374,7 +368,6 @@ body {
   transition: opacity 0.3s ease;
 }
 
-/* Loading spinner */
 .loading-spinner {
   display: flex;
   flex-direction: column;
@@ -385,7 +378,6 @@ body {
   color: #6b7280;
 }
 
-/* Category transition effects */
 .category-fade-out {
   opacity: 0.5;
 }
@@ -402,8 +394,6 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Category transition effects */
-/* Out of stock styling */
 .out-of-stock {
   position: relative;
   opacity: 0.7;
@@ -509,9 +499,6 @@ body {
   text-decoration: underline;
 }
 
-/* === PROFILE BOX === */
-
-/* Active book card styling */
 .book-card-active {
   transform: translateY(-7px);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
@@ -655,8 +642,3 @@ body {
   width: 100%;
   color: #6b7280;
 }
-
-
-
-
-/* General style for inputs and textareas */

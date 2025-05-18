@@ -1,25 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-  // Book preview in profile box functionality
   const bookCards = document.querySelectorAll('.book-card');
   const profileBox = document.querySelector('.profile-box');
-  let activeBookCard = null; // Track active book card
-      
-  // Function to update profile box with book details
+  let activeBookCard = null;
   function updateProfileBox(bookCard) {
-    // Skip if same book is clicked again
     if (activeBookCard === bookCard) return;
-
-    // Remove active class from previous active book card
     if (activeBookCard) {
       activeBookCard.classList.remove('book-card-active');
     }
-        
-    // Mark the new clicked card as active
     activeBookCard = bookCard;
     bookCard.classList.add('book-card-active');
-    
-    // Get book info from the clicked card
     const bookImage = bookCard.querySelector('img').src;
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
@@ -39,36 +28,25 @@ document.addEventListener("DOMContentLoaded", function () {
       const ratingNum = parseFloat(bookRating);
       for (let i = 1; i <= 5; i++) {
         if (i <= Math.floor(ratingNum)) {
-          stars += "★"; // Full star
+          stars += "★";
         } else if (i === Math.ceil(ratingNum) && ratingNum % 1 !== 0) {
-          stars += "★"; // Half star (approximating with full star for simplicity)
+          stars += "★";
         } else {
-          stars += "☆"; // Empty star
+          stars += "☆";
         }
       }
       stars += ` ${bookRating}`;
     } else {
       stars = "★☆☆☆☆ Not rated";
     }
-    
-    // Create animation effect - fade out
     profileBox.classList.add('profile-box-fade');
-
     if(currentPath.includes('categories')){
       bookCategory = bookCard.querySelector('.book-category').textContent;
     }
     else{
       bookCategory = bookCard.getAttribute('data-category');
     }
-
-    // Default category
-    // let bookCategory = "Fiction";
-
-    // Try to find the category of this specific book
-    // First check if this book has a specific data attribute with its category
-
     setTimeout(() => {
-      // Update profile box content
       profileBox.innerHTML = `
         <img src="${bookImage}" alt="${bookTitle}">
         <div class="title">${bookTitle}</div>
@@ -112,18 +90,14 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>` : ``}
       `;
 
-      // Remove fade class to trigger fade-in animation
       setTimeout(() => {
         profileBox.classList.remove('profile-box-fade');
       }, 50);
-      
-      // Add event listeners to the new buttons
       const borrowBtn = profileBox.querySelector('.profile-borrow-btn');
       const buyBtn = profileBox.querySelector('.profile-buy-btn');
       const editBtn = profileBox.querySelector('.profile-edit-btn');
       const deleteBtn = profileBox.querySelector('.profile-delete-btn');
       const returnBtn = profileBox.querySelector('.profile-return-btn');
-      // Find the original buttons on the book card
       const originalBorrowBtn = bookCard.querySelector('.borrow-btn');
       const originalBuyBtn = bookCard.querySelector('.buy-btn');
       const originalEditBtn = bookCard.querySelector('.edit-btn');
@@ -146,7 +120,6 @@ document.addEventListener("DOMContentLoaded", function () {
           originalEditBtn.click();
         });
       }
-      // Link the new buttons to the original buttons' actions
       if (borrowBtn && originalBorrowBtn) {
         borrowBtn.addEventListener('click', () => {
           originalBorrowBtn.click();
@@ -158,30 +131,21 @@ document.addEventListener("DOMContentLoaded", function () {
           originalBuyBtn.click();
         });
       }
-    }, 300); // Match this timing with CSS transition duration
+    }, 300);
   }
-  
-  // Initialize with the first book
   const initializeFirstBook = () => {
     if (bookCards.length > 0) {
       updateProfileBox(bookCards[0]);
     }
   };
-  
-  // Add click event to all book cards
   bookCards.forEach(bookCard => {
     bookCard.addEventListener('click', function(e) {
-      // Only trigger if click wasn't on a button
-      if (!e.target.classList.contains('borrow-btn') && 
+      if (!e.target.classList.contains('borrow-btn') &&
           !e.target.classList.contains('buy-btn')&&
           !e.target.classList.contains('edit-btn')) {
         updateProfileBox(this);
       }
     });
   });
-  
-  // Initialize with a small delay to ensure DOM is fully loaded
   setTimeout(initializeFirstBook, 500);
-
 });
-

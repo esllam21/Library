@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
-  <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
     <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
@@ -38,10 +37,7 @@
       {% endif %}
     </div>
   </div>
-
-  <!-- Main Layout: Sidebar + Content + Profile Box -->
   <div class="main-content-area">
-    <!-- Left: Sidebar -->
     <div class="sidebar">
       <ul>
         <li id="home-btn">
@@ -89,17 +85,13 @@
         {% endif %}
       </ul>
     </div>
-
-    <!-- Middle: Main Content -->
     <div class="content-wrapper">
-      <!-- Main Content -->
       <div class="main">
         <div class="featured">
           <div class="section-header">
             <h3>Search Results for "{{ query }}"</h3>
             <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
           </div>
-          
           {% if books %}
             <div class="books-row">
               {% for book in books %}
@@ -186,7 +178,6 @@
       </div>
     </div>
     
-    <!-- Right: Profile Box -->
     <div class="profile-box"></div>
   </div>
 
@@ -195,10 +186,7 @@
   <script src="{% static 'home/navbar.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Make favorite book IDs available to JavaScript
       window.favorite_book_ids = {{ favorite_book_ids|safe }};
-      
-      // Handle search input
       const searchInput = document.getElementById('search-input');
       searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {

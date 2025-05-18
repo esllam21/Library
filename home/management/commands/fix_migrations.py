@@ -9,10 +9,8 @@ class Command(BaseCommand):
     help = 'Fix migration state by creating a fake migration that matches the current DB state'
 
     def handle(self, *args, **options):
-        # Step 1: Fake the current migrations to match the actual DB state
         self.stdout.write("Step 1: Setting up migration state...")
         
-        # Get the latest migration for the home app
         app_config = apps.get_app_config('home')
         migrations_dir = os.path.join(app_config.path, 'migrations')
         migrations = [f for f in os.listdir(migrations_dir) 
@@ -23,11 +21,9 @@ class Command(BaseCommand):
             latest_migration = migrations[-1].replace('.py', '')
             self.stdout.write(f"Latest migration found: {latest_migration}")
             
-            # Mark all migrations as applied without actually running them
             self.stdout.write("Marking all migrations as applied...")
             call_command('migrate', 'home', latest_migration, '--fake')
             
-            # Create a new migration that represents the current state
             self.stdout.write("Step 2: Creating a new migration that represents the current state...")
             call_command('makemigrations', 'home', '--empty', '--name', 'sync_with_current_db_state')
             

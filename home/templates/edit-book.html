@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-user-type="{{ userType }}">
-  <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
     <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
@@ -35,10 +34,7 @@
       {% endif %}
     </div>
   </div>
-
-  <!-- Main Layout: Sidebar + Content -->
   <div class="main-content-area">
-    <!-- Left: Sidebar -->
     <div class="sidebar">
       <ul>
         <li id="home-btn">
@@ -87,8 +83,6 @@
         {% endif %}
       </ul>
     </div>
-
-    <!-- Middle: Main Content -->
     <div class="content-wrapper">
       <div class="main">
         <div class="featured">

@@ -14,8 +14,6 @@ class Category(models.Model):
     verbose_name_plural = "Categories"
 
 
-
-
 class Books(models.Model):
   title = models.CharField(max_length=255)
   author = models.CharField(max_length=255)
@@ -26,9 +24,7 @@ class Books(models.Model):
   stock = models.IntegerField()
   count = models.IntegerField(null=True, default=0)
   image = models.ImageField(upload_to='book-images/', null=True, blank=True)
-  # Keep the old field for compatibility during migration
   category = models.CharField(max_length=255, null=True)
-  # New field that references the Category model
   book_category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='books')
   description = models.TextField(null=True)
   published = models.IntegerField(null=True)
@@ -39,23 +35,19 @@ class Books(models.Model):
 
   @property
   def get_image_url(self):
-    """Return image URL or a default placeholder if image is missing"""
     if self.image and hasattr(self.image, 'url'):
       return self.image.url
     return "https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image"
 
   @property
   def get_category(self):
-    """Return category name, prioritizing the relationship field"""
     if self.book_category:
       return self.book_category.name
     return self.category
 
   @property
   def calculated_buy_price(self):
-    """Calculate buy price based on borrow price + random value"""
     if self.borrowPrice:
-      # If buyPrice is not set, calculate it on the fly
       if not self.buyPrice:
         random_addition = random.randint(20, 50)
         return self.borrowPrice + Decimal(random_addition)
@@ -63,7 +55,6 @@ class Books(models.Model):
     return Decimal('0.00')
 
   def save(self, *args, **kwargs):
-    # Auto-calculate buyPrice if it's not already set
     if self.borrowPrice and not self.buyPrice:
       random_addition = random.randint(20, 50)
       self.buyPrice = self.borrowPrice + Decimal(random_addition)

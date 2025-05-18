@@ -1,15 +1,11 @@
-/* Out of Stock Styling for Book Cards */
-
 .out-of-stock {
   position: relative;
   opacity: 0.8;
   filter: grayscale(40%);
   transform: scale(0.98);
   transition: all 0.3s ease;
-  pointer-events: auto; /* Allow clicks for information display */
+  pointer-events: auto;
 }
-
-/* Out of stock banner */
 .out-of-stock::before {
   content: "OUT OF STOCK";
   position: absolute;
@@ -29,7 +25,6 @@
   text-align: center;
 }
 
-/* Semi-transparent overlay */
 .out-of-stock .book-card-img::after {
   content: "";
   position: absolute;
@@ -42,7 +37,6 @@
   z-index: 1;
 }
 
-/* Button styling for out-of-stock items */
 .out-of-stock .action-buttons {
   opacity: 0.6;
 }
@@ -61,14 +55,12 @@
   border-color: #545b62;
 }
 
-/* Make sure text is readable even with the overlay */
 .out-of-stock .book-title,
 .out-of-stock .book-author,
 .out-of-stock .book-rating {
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
 }
 
-/* Prevent actual button clicks on out-of-stock items */
 .out-of-stock .action-buttons a {
   pointer-events: none;
 }

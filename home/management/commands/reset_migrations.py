@@ -26,12 +26,10 @@ class Command(BaseCommand):
 
         app_name = 'home'
         
-        # Step 1: Clear the django_migrations table entries for our app
         self.stdout.write("Step 1: Clearing migration history for 'home' app...")
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM django_migrations WHERE app = %s", [app_name])
         
-        # Step 2: Delete all migration files except __init__.py
         self.stdout.write("Step 2: Removing old migration files...")
         migrations_dir = os.path.join('home', 'migrations')
         for filename in os.listdir(migrations_dir):
@@ -40,11 +38,9 @@ class Command(BaseCommand):
                 os.remove(file_path)
                 self.stdout.write(f"Removed: {file_path}")
         
-        # Step 3: Create a fresh initial migration based on current models
         self.stdout.write("Step 3: Creating fresh initial migration...")
         call_command('makemigrations', app_name)
         
-        # Step 4: Fake-apply the new initial migration
         self.stdout.write("Step 4: Fake-applying the new migration...")
         call_command('migrate', app_name, '--fake-initial')
         

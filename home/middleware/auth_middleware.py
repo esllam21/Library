@@ -1,7 +1,6 @@
 from django.shortcuts import redirect
-
-
 from django.shortcuts import redirect
+
 
 class LoginRequiredMiddleware:
     def __init__(self, get_response):
@@ -14,7 +13,7 @@ class LoginRequiredMiddleware:
             '/home/signup/', 
             '/admin/', 
             '/static/', 
-            '/media/'  # Allow access to media files without login
+            '/media/'
         ]
 
         if not request.session.get('is_logged_in'):

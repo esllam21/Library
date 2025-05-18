@@ -16,7 +16,6 @@
 
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
-  <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
     <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
@@ -40,9 +39,7 @@
     </div>
   </div>
 
-  <!-- Main Layout: Sidebar + Content + Profile Box -->
   <div class="main-content-area">
-    <!-- Left: Sidebar -->
     <div class="sidebar">
       <ul>
         <li class="active" id="home-btn">
@@ -91,9 +88,7 @@
         <div style="height: 20px"></div>
       </ul>
     </div>
-    <!-- Middle: Main Content -->
     <div class="content-wrapper">
-      <!-- 🔸 MAIN CONTENT -->
       <div class="main">
       {% if is_logged_in and has_recommendations %}
       <div class="featured">
@@ -269,7 +264,6 @@
                 
 
 
-    <!-- Right: Profile Box -->
     <div class="profile-box"></div>
   </div>
 
@@ -277,7 +271,6 @@
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
   <script>
-    // Make favorite book IDs available to JavaScript
     window.favorite_book_ids = {{ favorite_book_ids|safe }};
   </script>
 </body>

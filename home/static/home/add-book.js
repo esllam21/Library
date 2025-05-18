@@ -18,9 +18,7 @@ document.getElementById('image').addEventListener('change', function(e) {
         reader.readAsDataURL(this.files[0]);
       }
     });
-
-    // Highlight the active sidebar item
-    document.addEventListener('DOMContentLoaded', function() {
+ document.addEventListener('DOMContentLoaded', function() {
       const currentPath = window.location.pathname;
       const sidebarItems = document.querySelectorAll('.sidebar li');
 
