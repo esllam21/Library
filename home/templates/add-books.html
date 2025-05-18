@@ -19,6 +19,14 @@
       <input type="text" placeholder="Search your favourite books...">
     </div>
     <div class="profile">
+      {% if userType == 'Admin' %}
+        <div class="admin-btn">
+          <a href="/admin/">
+            <i class="ph ph-gear"></i>
+          </a>
+        </div>
+      <span class="username" style="margin: 0 15px">Revenue: ${{ total }}</span>
+      {% endif %}
       <span class="notification"><i class="ph ph-bell"></i></span>
 
       {% if is_logged_in %}
@@ -52,7 +60,11 @@
         </li>
         <li id="favourites-btn">
           <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
-          <span class="label">Favourites</span>
+          <span class="label">Favorites</span>
+        </li>
+        <li id="adminDashboard-btn">
+          <span class="icon-wrapper"><i class="ph ph-gauge"></i></span>
+          <span class="label">Dashboard</span>
         </li>
         <li class="active" id="addBook-btn">
           <span class="icon-wrapper"><i class="ph ph-plus"></i></span>

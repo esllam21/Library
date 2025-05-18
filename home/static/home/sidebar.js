@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const supportBtn = document.getElementById('support-btn');
   const loginBtn = document.getElementById('login-btn');
   const addBookBtn = document.getElementById('addBook-btn');
+  const admindashboradBtn = document.getElementById('adminDashboard-btn');
+  if(admindashboradBtn){
+    admindashboradBtn.addEventListener('click',function(){
+        window.location.href="/home/adminDashboard/"
+    })
+  }
   if(addBookBtn){
       addBookBtn.addEventListener('click',function(){
           window.location.href="/home/addBooks/"

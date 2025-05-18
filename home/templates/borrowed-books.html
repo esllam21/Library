@@ -17,10 +17,19 @@
     <h2 class="logo">ReadIT</h2>
     <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
     <div class="search-input">
-      <input type="text" placeholder="Search your borrowed books...">
+      <input type="text" placeholder="Search your favourite books...">
     </div>
     <div class="profile">
+      {% if userType == 'Admin' %}
+        <div class="admin-btn">
+          <a href="/admin/">
+            <i class="ph ph-gear"></i>
+          </a>
+        </div>
+      <span class="username" style="margin: 0 15px">Revenue: ${{ total }}</span>
+      {% endif %}
       <span class="notification"><i class="ph ph-bell"></i></span>
+
       {% if is_logged_in %}
         <div class="user-profile">
           <img src="{{ user_image }}" alt="{{ username }}">
@@ -52,9 +61,13 @@
         </li>
         <li id="favourites-btn">
           <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
-          <span class="label">Favourites</span>
+          <span class="label">Favorites</span>
         </li>
         {% if userType == 'Admin' %}
+          <li id="adminDashboard-btn">
+            <span class="icon-wrapper"><i class="ph ph-gauge"></i></span>
+            <span class="label">Dashboard</span>
+          </li>
           <li id="addBook-btn">
             <span class="icon-wrapper"><i class="ph ph-plus"></i></span>
             <span class="label">Add Book</span>

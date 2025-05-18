@@ -13,7 +13,9 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from .forms import BookForm
-
+from django.db.models import Count, Q
+from django.utils import timezone
+from datetime import timedelta
 
 def categoriesPage(request):
   categories = Category.objects.annotate(
@@ -26,6 +28,7 @@ def categoriesPage(request):
   userType = None
   favorite_book_ids = []
   books = []
+  total=0
   if request.session.get('is_logged_in'):
     try:
       user = Members.objects.get(email=request.session.get('user_email'))
@@ -39,6 +42,13 @@ def categoriesPage(request):
       owned_book_ids = OwnedBooks.objects.filter(
         member=user
       ).values_list('book_id', flat=True)
+      borrowedBooks=BorrowedBook.objects.all()
+      ownedBooks=OwnedBooks.objects.all()
+      for borrowed in borrowedBooks:
+        total+= borrowed.book.borrowPrice
+      for owned in ownedBooks:
+        total+=owned.book.buyPrice
+
       favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
     except Members.DoesNotExist:
       pass
@@ -50,7 +60,7 @@ def categoriesPage(request):
   else:
     try:
       books = Books.objects.filter(book_category_id=category_id).order_by('-rating', '-ratingCount')
-      if books.count() < 12:  # Minimum threshold
+      if books.count() < 12:
         category = Category.objects.get(id=category_id)
         additional_books = Books.objects.filter(
           category=category.name
@@ -79,6 +89,7 @@ def categoriesPage(request):
     'is_home_page': '/home/homePage/' in current_path,
     'borrowed_book_ids': borrowed_book_ids,
     'owned_book_ids': owned_book_ids,
+    'total':total,
   })
 
 
@@ -143,7 +154,7 @@ def homePage(request):
   favorite_book_ids = []
   borrowed_book_ids = []
   owned_book_ids = []
-
+  total=0
   if request.session.get('is_logged_in'):
     try:
       user = Members.objects.get(email=request.session.get('user_email'))
@@ -154,6 +165,12 @@ def homePage(request):
       owned_book_ids = OwnedBooks.objects.filter(
         member=user
       ).values_list('book_id', flat=True)
+      borrowedBooks=BorrowedBook.objects.all()
+      ownedBooks=OwnedBooks.objects.all()
+      for borrowed in borrowedBooks:
+        total+= borrowed.book.borrowPrice
+      for owned in ownedBooks:
+        total+=owned.book.buyPrice
       recommended_books = get_recommended_books(user)
       for book in recommended_books:
         if book.borrowPrice and not book.buyPrice:
@@ -190,6 +207,7 @@ def homePage(request):
     'userType': userType,
     'borrowed_book_ids': borrowed_book_ids,
     'owned_book_ids': owned_book_ids,
+    'total':total,
   })
 
 
@@ -245,28 +263,71 @@ def signup(request):
   return render(request, 'signup.html')
 
 
+
 def adminDashboard(request):
-  user_image = None
-  username = None
-  user = None
+  if not request.session.get('is_logged_in') or request.session.get('user_type') != 'Admin':
+    return redirect('login')
 
-  if request.session.get('is_logged_in'):
-    try:
-      user = Members.objects.get(email=request.session.get('user_email'))
-      user_image = user.image.url if user.image else '/static/images/default-user.png'
-      username = user.username
+  try:
+    user = Members.objects.get(email=request.session.get('user_email'))
+  except Members.DoesNotExist:
+    return redirect('login')
 
-      # Get user's favorite books
-    except Members.DoesNotExist:
-      pass
-    except Exception as e:
-      print(f"Error getting user details: {e}")
+  thirty_days_ago = timezone.now() - timedelta(days=30)
+  seven_days_ago = timezone.now() - timedelta(days=7)
+  borrowedBooks = BorrowedBook.objects.all()
+  ownedBooks = OwnedBooks.objects.all()
+  total=0
+  for borrowed in borrowedBooks:
+    total += borrowed.book.borrowPrice
+  for owned in ownedBooks:
+    total += owned.book.buyPrice
+
+  stats = {
+    'total_books': Books.objects.count(),
+    'total_members': Members.objects.count(),
+    'active_borrows': BorrowedBook.objects.filter(returned=False).count(),
+    'total_borrows': BorrowedBook.objects.count(),
+    'total_purchases': OwnedBooks.objects.count(),
+
+    'recent_books': Books.objects.order_by('-id')[:5],
+    'recent_members': Members.objects.order_by('-id')[:5],
+    'recent_borrows': BorrowedBook.objects.select_related('book', 'member')
+                      .filter(returned=False)
+                      .order_by('-borrowed_date')[:5],
+
+    'categories': Category.objects.annotate(book_count=Count('books'))
+                  .order_by('-book_count')[:5],
+
+    'popular_books': Books.objects.annotate(
+      total_activity=Count('borrowedbook') + Count('ownedbooks')
+    ).order_by('-total_activity')[:5],
+
+    'recent_activity': {
+      'books_added': Books.objects.filter(id__gte=Books.objects.last().id - 10).count(),
+      'new_members': Members.objects.filter(id__gte=Members.objects.last().id - 10).count(),
+      'borrows': BorrowedBook.objects.filter(borrowed_date__gte=thirty_days_ago).count(),
+      'purchases': OwnedBooks.objects.filter(purchase_date__gte=thirty_days_ago).count(),
+      'recent_borrows': BorrowedBook.objects.filter(borrowed_date__gte=seven_days_ago).count(),
+      'recent_purchases': OwnedBooks.objects.filter(purchase_date__gte=seven_days_ago).count()
+    },
+
+    'low_stock_books': Books.objects.filter(stock__lte=5).order_by('stock')[:5],
+
+    'active_members': Members.objects.annotate(
+      borrow_count=Count('borrowedbook', filter=Q(borrowedbook__returned=False))
+    ).order_by('-borrow_count')[:5]
+  }
+
   return render(request, 'admin-dashboard.html', {
-    'is_logged_in': request.session.get('is_logged_in', False),
-    'user_image': user_image,
-    'username': username,
+    'is_logged_in': True,
+    'user_image': user.image.url if user.image else '/static/images/default-user.png',
+    'username': user.username,
+    'userType': user.user_type,
+    'stats': stats,
+    'current_page': 'admin_dashboard',
+    'total':total,
   })
-
 
 def addBooks(request):
   categories = Category.objects.all().order_by('name')
@@ -278,6 +339,14 @@ def addBooks(request):
   userType = request.session.get('user_type')
   user_image = user.image.url if user.image else '/static/images/default-user.png'
   username = user.username
+  total=0
+  borrowedBooks = BorrowedBook.objects.all()
+  ownedBooks = OwnedBooks.objects.all()
+  for borrowed in borrowedBooks:
+    total += borrowed.book.borrowPrice
+  for owned in ownedBooks:
+    total += owned.book.buyPrice
+
   if request.method == 'POST':
     title = request.POST.get('title')
     author = request.POST.get('author')
@@ -322,6 +391,7 @@ def addBooks(request):
     'username': username,
     'userType': userType,
     'user': user,
+    'total':total,
   }
   return render(request, 'add-books.html', context)
 
@@ -399,6 +469,7 @@ def search_books(request):
   favorite_book_ids = []
   user = None
   stock = None
+  total=0
   query = request.GET.get('q', '')
   if query:
     books = Books.objects.filter(
@@ -418,6 +489,13 @@ def search_books(request):
       owned_book_ids = OwnedBooks.objects.filter(
         member=user
       ).values_list('book_id', flat=True)
+      borrowedBooks=BorrowedBook.objects.all()
+      ownedBooks=OwnedBooks.objects.all()
+      for borrowed in borrowedBooks:
+        total+= borrowed.book.borrowPrice
+      for owned in ownedBooks:
+        total+=owned.book.buyPrice
+
     return render(request, 'search_results.html', {
       'books': books,
       'query': query,
@@ -429,6 +507,7 @@ def search_books(request):
       'userType': userType,
       'borrowed_book_ids': borrowed_book_ids,
       'owned_book_ids': owned_book_ids,
+      'total':total,
     })
   else:
     return redirect('/home/homePage/')
@@ -494,6 +573,7 @@ def getFavoriteBooks(request):
     return redirect('/home/login/')
   try:
     user = Members.objects.get(email=request.session.get('user_email'))
+    total=0
     favorite_books = FavouriteBooks.objects.filter(member=user).select_related('book')
     borrowed_book_ids = BorrowedBook.objects.filter(
       member=user, returned=False
@@ -501,6 +581,12 @@ def getFavoriteBooks(request):
     owned_book_ids = OwnedBooks.objects.filter(
       member=user
     ).values_list('book_id', flat=True)
+    borrowedBooks = BorrowedBook.objects.all()
+    ownedBooks = OwnedBooks.objects.all()
+    for borrowed in borrowedBooks:
+      total += borrowed.book.borrowPrice
+    for owned in ownedBooks:
+      total += owned.book.buyPrice
     favorite_book_ids = list(favorite_books.values_list('book_id', flat=True))
     return render(request, 'favorites.html', {
       'is_logged_in': True,
@@ -511,6 +597,7 @@ def getFavoriteBooks(request):
       'userType': user.user_type,
       'borrowed_book_ids': list(borrowed_book_ids),
       'owned_book_ids': list(owned_book_ids),
+      'total':total,
     })
   except Members.DoesNotExist:
     messages.error(request, "User not found")
@@ -524,12 +611,20 @@ def edit_books(request, book_id):
   user_image = None
   username = None
   user = None
+  total=0
   if request.session.get('is_logged_in'):
     try:
       user = Members.objects.get(email=request.session.get('user_email'))
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
       userType = user.user_type
+      borrowedBooks=BorrowedBook.objects.all()
+      ownedBooks=OwnedBooks.objects.all()
+      for borrowed in borrowedBooks:
+        total+= borrowed.book.borrowPrice
+      for owned in ownedBooks:
+        total+=owned.book.buyPrice
+
     except Members.DoesNotExist:
       return None
     except Exception as e:
@@ -539,7 +634,7 @@ def edit_books(request, book_id):
     form = BookForm(request.POST, instance=book)
     if form.is_valid():
       form.save()
-      return redirect('homepage')  # غيرها حسب اسم صفحة التفاصيل عندك
+      return redirect('homepage')
   else:
     form = BookForm(instance=book)
   return render(request, 'edit-book.html', {
@@ -548,13 +643,14 @@ def edit_books(request, book_id):
     'user_image': user_image,
     'username': username,
     'userType': userType,
+    'total':total,
   })
 
 
 def delete_books(request, book_id):
   book = Books.objects.get(id=book_id)
   book.delete()
-  return redirect('homepage')
+  return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
 
 
 def borrowed_books_view(request):
@@ -563,6 +659,7 @@ def borrowed_books_view(request):
   username = None
   user = None
   favorite_book_ids = []
+  total=0
   if request.session.get('is_logged_in'):
     try:
       user = Members.objects.get(email=request.session.get('user_email'))
@@ -570,6 +667,13 @@ def borrowed_books_view(request):
       username = user.username
       userType = user.user_type
       favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
+      borrowedBooks=BorrowedBook.objects.all()
+      ownedBooks=OwnedBooks.objects.all()
+      for borrowed in borrowedBooks:
+        total+= borrowed.book.borrowPrice
+      for owned in ownedBooks:
+        total+=owned.book.buyPrice
+
     except Members.DoesNotExist:
       pass
     except Exception as e:
@@ -604,4 +708,5 @@ def borrowed_books_view(request):
     'member_data': member_data,
     'favorite_book_ids': list(favorite_book_ids),
     'userType': userType,
+    'total':total,
   })

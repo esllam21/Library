@@ -2,20 +2,16 @@
 <html lang="en">
 {% load static %}
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" type="x-icon" href="/assets/parthenon-svgrepo-com (1).svg">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
-    <link rel="stylesheet" href="{% static 'home/admin-dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
-    <link rel="stylesheet" href="{% static 'home/Home.css' %}">
-
-    <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard | BookBase</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'home/admin-dashboard.css' %}">
 </head>
-<body data-logged-in="{{ is_logged_in|lower }}">
+<body data-logged-in="{{ is_logged_in|lower }}" data-user-type="{{ userType }}">
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
     <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
@@ -23,6 +19,14 @@
       <input type="text" placeholder="Search your favourite books...">
     </div>
     <div class="profile">
+      {% if userType == 'Admin' %}
+        <div class="admin-btn">
+          <a href="/admin/">
+            <i class="ph ph-gear"></i>
+          </a>
+        </div>
+      <span class="username" style="margin: 0 15px">Revenue: ${{ total }}</span>
+      {% endif %}
       <span class="notification"><i class="ph ph-bell"></i></span>
 
       {% if is_logged_in %}
@@ -39,9 +43,10 @@
     </div>
   </div>
 
+  <div class="main-content-area">
     <div class="sidebar">
       <ul>
-        <li class="active" id="home-btn">
+        <li id="home-btn">
           <span class="icon-wrapper"><i class="ph ph-house"></i></span>
           <span class="label">Discover</span>
         </li>
@@ -55,8 +60,20 @@
         </li>
         <li id="favourites-btn">
           <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
-          <span class="label">Favourites</span>
+          <span class="label">Favorites</span>
         </li>
+        {% if userType == 'Admin' %}
+          <li id="adminDashboard-btn" class="active">
+            <span class="icon-wrapper"><i class="ph ph-gauge"></i></span>
+            <span class="label">Dashboard</span>
+          </li>
+
+          <li id="addBook-btn">
+            <span class="icon-wrapper"><i class="ph ph-plus"></i></span>
+            <span class="label">Add Book</span>
+          </li>
+        {% endif %}
+
         <div style="height: 20px;"></div>
 
         <li id="settings-btn">
@@ -67,59 +84,189 @@
           <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
           <span class="label">Support</span>
         </li>
-        <li id="logout-btn">
-          <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
-          <span class="label">Logout</span>
-        </li>
+        {% if is_logged_in %}
+          <li id="logout-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+            <span class="label">Logout</span>
+          </li>
+        {% else %}
+          <li id="login-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-in"></i></span>
+            <span class="label">Sign in</span>
+        {% endif %}
+        <div style="height: 20px"></div>
       </ul>
     </div>
-
-    <main id="main-content">
-        <div class="main-content">
-            <div class="header">
-                <h1>Dashboard</h1>
-            </div>
-            <ul class="cards">
-                <a href="/home/borrowedBooksAdmin">
-                    <li class="lists">
-                        <i class='bx bxs-shopping-bags' ></i>
-                    <span class="info borrowed-book-count">
-                        <h3></h3>
-                        <p>Borrowed Books</p>
-                    </span>
-                    </li>
     
-                </a>
-                <a href="/home/addBooks/">
-                    <li class="lists">
-                        <i class='bx bx-book'></i>
-                    <span class="info Published-books-count">
-                        <h3></h3>
-                        <p>Add Books</p>
-                    </span>
-                    </li>
-                </a>
-                <li class="lists">
-                    <i class="bx bx-dollar-circle"></i>
-                    <span class="info earnings-this-month" id="monthly-earnings">
-                        <h3></h3>
-                        <p>This Month</p>
-                    </span>
-                    </li>
-                <li class="lists">
-                    <i class='bx bx-chart'></i>
-                    <span class="info most-borrowed-book">
-                        <h3></h3>
-                        <p>Most Borrowed Book</p>
-                    </span>
-                    <img class="mostbook" >
-                </li>
-            </ul>
+    <div class="content-wrapper">
+      <div class="main">
+        <h1 style="margin-bottom: 25px; color: rgb(30, 64, 175)">Admin Dashboard</h1>
+        <div class="dashboard-container">
+          <div class="stat-card book">
+            <div class="stat-icon">
+              <i class="ph ph-book-open" style="font-size: 20px;"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_books }}</div>
+            <div class="stat-label">Total Books</div>
+          </div>
+          
+          <div class="stat-card user">
+            <div class="stat-icon">
+              <i class="ph ph-users" style="font-size: 20px;"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_members }}</div>
+            <div class="stat-label">Total Members</div>
+          </div>
+          
+          <div class="stat-card borrow">
+            <div class="stat-icon">
+              <i class="ph ph-bookmark" style="font-size: 20px;"></i>
+            </div>
+            <div class="stat-value">{{ stats.active_borrows }}</div>
+            <div class="stat-label">Active Borrows</div>
+          </div>
+          
+          <div class="stat-card sale">
+            <div class="stat-icon">
+              <i class="ph ph-shopping-cart" style="font-size: 20px;"></i>
+            </div>
+            <div class="stat-value">{{ stats.total_purchases }}</div>
+            <div class="stat-label">Total Purchases</div>
+          </div>
         </div>
-    </main>
-    <script src="{% static 'home/admin-dashboard.js' %}"></script>
-    <script src="{% static 'home/sidebar.js' %}"></script>
-    <script src="{% static 'home/navbar.js' %}"></script>
-
+        
+        <div class="section-title">
+          <i class="ph ph-clock-countdown"></i>
+          <span>Recent Activity (Last 30 Days)</span>
+        </div>
+        
+        <div class="activity-stats">
+          <div class="activity-stat">
+            <i class="ph ph-book" style="color: #4338ca;"></i>
+            <div class="stat-value">{{ stats.recent_activity.books_added }}</div>
+            <div class="stat-label">Books Added</div>
+          </div>
+          <div class="activity-stat">
+            <i class="ph ph-user-plus" style="color: #047857;"></i>
+            <div class="stat-value">{{ stats.recent_activity.new_members }}</div>
+            <div class="stat-label">New Members</div>
+          </div>
+          <div class="activity-stat">
+            <i class="ph ph-bookmark-simple" style="color: #1d4ed8;"></i>
+            <div class="stat-value">{{ stats.recent_activity.borrows }}</div>
+            <div class="stat-label">Borrows</div>
+          </div>
+          <div class="activity-stat">
+            <i class="ph ph-currency-dollar" style="color: #b91c1c;"></i>
+            <div class="stat-value">{{ stats.recent_activity.purchases }}</div>
+            <div class="stat-label">Purchases</div>
+          </div>
+        </div>
+        
+        <div class="two-column-grid" style="margin-top: 30px;">
+          <div>
+            <div class="section-title">
+              <i class="ph ph-book-open-text"></i>
+              <span>Recently Added Books</span>
+            </div>
+            <div class="recent-list">
+              {% for book in stats.recent_books %}
+                <div class="recent-item">
+                  {% if book.image %}
+                    <img src="{{ book.image.url }}" alt="{{ book.title }}">
+                  {% else %}
+                    <img src="https://via.placeholder.com/40x50/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
+                  {% endif %}
+                  <div class="item-info">
+                    <div class="item-title">{{ book.title }}</div>
+                    <div class="item-meta">{{ book.author }}</div>
+                  </div>
+                  <div class="item-date">{{ book.created_at|date:"M d" }}</div>
+                </div>
+              {% empty %}
+                <div style="padding: 20px; text-align: center; color: #64748b;">No recent books</div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <div>
+            <div class="section-title">
+              <i class="ph ph-user-list"></i>
+              <span>Recently Joined Members</span>
+            </div>
+            <div class="recent-list">
+              {% for member in stats.recent_members %}
+                <div class="recent-item">
+                  {% if member.image %}
+                    <img src="{{ member.image.url }}" alt="{{ member.username }}">
+                  {% else %}
+                    <img src="{% static 'images/default-user.png' %}" alt="{{ member.username }}">
+                  {% endif %}
+                  <div class="item-info">
+                    <div class="item-title">{{ member.username }}</div>
+                    <div class="item-meta">{{ member.email }}</div>
+                  </div>
+                  <div class="item-date">{{ member.date_joined|date:"M d" }}</div>
+                </div>
+              {% empty %}
+                <div style="padding: 20px; text-align: center; color: #64748b;">No recent members</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        
+        <div class="two-column-grid" style="margin-top: 30px;">
+          <div>
+            <div class="section-title">
+              <i class="ph ph-bookmark-simple"></i>
+              <span>Active Borrows</span>
+            </div>
+            <div class="recent-list">
+              {% for borrow in stats.recent_borrows %}
+                <div class="recent-item">
+                  {% if borrow.book.image %}
+                    <img src="{{ borrow.book.image.url }}" alt="{{ borrow.book.title }}">
+                  {% else %}
+                    <img src="https://via.placeholder.com/40x50/e0e0e0/808080?text=No+Image" alt="{{ borrow.book.title }}">
+                  {% endif %}
+                  <div class="item-info">
+                    <div class="item-title">{{ borrow.book.title }}</div>
+                    <div class="item-meta">Borrowed by {{ borrow.member.username }}</div>
+                  </div>
+                  <div class="item-date">{{ borrow.borrow_date|date:"M d" }}</div>
+                </div>
+              {% empty %}
+                <div style="padding: 20px; text-align: center; color: #64748b;">No active borrows</div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <div>
+            <div class="section-title">
+              <i class="ph ph-tag"></i>
+              <span>Popular Categories</span>
+            </div>
+            <div class="recent-list">
+              {% for category in stats.categories %}
+                <div class="recent-item">
+                  <div class="stat-icon" style="margin-right: 15px; background-color: #e0e7ff;">
+                    <i class="ph ph-tag" style="color: #4338ca; font-size: 16px;"></i>
+                  </div>
+                  <div class="item-info">
+                    <div class="item-title">{{ category.name }}</div>
+                    <div class="item-meta">{{ category.book_count }} books</div>
+                  </div>
+                </div>
+              {% empty %}
+                <div style="padding: 20px; text-align: center; color: #64748b;">No categories</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+  <script src="{% static 'home/navbar.js' %}"></script>
 </body>
 </html>
