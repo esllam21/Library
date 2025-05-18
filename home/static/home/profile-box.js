@@ -24,22 +24,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
     const bookDes=bookCard.querySelector('.book-des').textContent;
-    
-    // Get rating if available, otherwise use placeholder
-    let bookRating = "N/A";
-    const ratingElement = bookCard.querySelector('.book-rating span');
-    if (ratingElement) {
-      bookRating = ratingElement.textContent;
-    }
-    
-    // Get prices
     const borrowPrice = bookCard.querySelector('.book-price')?.textContent || "$0.00";
     const buyPrice = bookCard.querySelector('.buy-price')?.textContent || "$0.00";
     const id = bookCard.querySelector('.book-id')?.textContent || "0";
     const stock = bookCard.querySelector('.stock')?.textContent || "0";
     const count = bookCard.querySelector('.count')?.textContent || "0";
-    
-    // Create star rating display
+    const pages=bookCard.getAttribute('data-pages');
+    const reviewCount=bookCard.getAttribute('data-rating-count');
+    const bookRating = bookCard.querySelector('.book-rating span')?.textContent || "N/A";
+    const currentPath=window.location.pathname;
+    let bookCategory
     let stars = "";
     if (bookRating !== "N/A") {
       const ratingNum = parseFloat(bookRating);
@@ -59,75 +53,20 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Create animation effect - fade out
     profileBox.classList.add('profile-box-fade');
-    
-    // Try to get actual pageCount or use a default
-    let pages;
-    // Check if there's a pageCount data attribute
-    if (bookCard.hasAttribute('data-pages')) {
-      pages = bookCard.getAttribute('data-pages');
-    } else {
-      // Generate a random number for demo purposes
-      pages = Math.floor(Math.random() * 400) + 100; // Random number between 100-500
+
+    if(currentPath.includes('categories')){
+      bookCategory = bookCard.querySelector('.book-category').textContent;
     }
-    
-    // Get or generate rating count
-    let reviewCount;
-    if (bookCard.hasAttribute('data-rating-count')) {
-      reviewCount = bookCard.getAttribute('data-rating-count');
-    } else {
-      // Generate a random number for demo purposes  
-      reviewCount = Math.floor(Math.random() * 1000) + 50; // Random number of reviews
+    else{
+      bookCategory = bookCard.getAttribute('data-category');
     }
-    
+
     // Default category
-    let bookCategory = "Fiction";
-    
+    // let bookCategory = "Fiction";
+
     // Try to find the category of this specific book
     // First check if this book has a specific data attribute with its category
-    const categoryDataAttr = bookCard.getAttribute('data-category');
-    if (categoryDataAttr) {
-      bookCategory = categoryDataAttr;
-    } else {
-      // Try to find the book's category from the current section
-      const bookSection = bookCard.closest('.featured, .categories');
-      if (bookSection) {
-        // Try to get category from tags that might be associated with this book
-        const tagsContainer = bookSection.querySelector('.tags');
-        if (tagsContainer) {
-          // Get the active tag if possible
-          const activeTag = tagsContainer.querySelector('.tag.active');
-          if (activeTag && activeTag.textContent !== "All") {
-            bookCategory = activeTag.textContent.trim();
-          } else {
-            // If no active tag, get the first non-"All" tag
-            const tags = tagsContainer.querySelectorAll('.tag');
-            for (const tag of tags) {
-              if (tag.textContent.trim() !== "All") {
-                bookCategory = tag.textContent.trim();
-                break;
-              }
-            }
-          }
-        }
-        
-        // If we still don't have a specific category, try to get the section title
-        if (bookCategory === "Fiction") {
-          const sectionHeader = bookSection.querySelector('h3');
-          if (sectionHeader && sectionHeader.textContent) {
-            const headerText = sectionHeader.textContent.trim();
-            // Only use section header if it's a likely category name (not "Recommended for You" or "Discover")
-            if (headerText !== "Recommended for You" && 
-                headerText !== "Discover" && 
-                headerText !== "Featured" &&
-                headerText !== "New Arrivals") {
-              bookCategory = headerText;
-            }
-          }
-        }
-      }
-    }
-    
-    // After fade out completes, update content and fade in
+
     setTimeout(() => {
       // Update profile box content
       profileBox.innerHTML = `
@@ -144,9 +83,9 @@ document.addEventListener("DOMContentLoaded", function () {
           <span class="meta">${reviewCount} Ratings</span>
         </div>
         <div class="meta-row">
-          <div class="meta">Borrow: ${borrowPrice}</div>
+          <div class="meta">${borrowPrice}</div>
           <span class="meta-separator"></span>
-          <div class="meta">Buy: ${buyPrice}</div>
+          <div class="meta">${buyPrice}</div>
         </div>
         ${ document.body.getAttribute('data-user-type') === 'Admin' ? `<div class="meta-row">
             <div class="meta">Stock: ${stock}</div>
@@ -154,9 +93,18 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="meta">Count: ${count}</div>
           </div>` : ``}
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-          <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
+          ${currentPath.includes('borrowedBooks') ? 
+            `
+            <button class="profile-return-btn" style="flex: 1; background-color: #ff5151">Return</button>
             <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>
-        </div>
+            `
+            : 
+            `
+            <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
+            <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>
+            `
+          }       
+         </div>
         ${document.body.getAttribute('data-user-type') === 'Admin' ? `
           <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
             <button class="profile-edit-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
@@ -174,12 +122,19 @@ document.addEventListener("DOMContentLoaded", function () {
       const buyBtn = profileBox.querySelector('.profile-buy-btn');
       const editBtn = profileBox.querySelector('.profile-edit-btn');
       const deleteBtn = profileBox.querySelector('.profile-delete-btn');
+      const returnBtn = profileBox.querySelector('.profile-return-btn');
       // Find the original buttons on the book card
       const originalBorrowBtn = bookCard.querySelector('.borrow-btn');
       const originalBuyBtn = bookCard.querySelector('.buy-btn');
       const originalEditBtn = bookCard.querySelector('.edit-btn');
       const originalDeleteBtn = bookCard.querySelector('.delete-btn');
+      const originalReturnBtn = bookCard.querySelector('.return-btn');
 
+      if(returnBtn && originalReturnBtn){
+        returnBtn.addEventListener('click', () => {
+          originalReturnBtn.click();
+        });
+      }
       if(deleteBtn && originalDeleteBtn){
         deleteBtn.addEventListener('click', () => {
           originalDeleteBtn.click();
