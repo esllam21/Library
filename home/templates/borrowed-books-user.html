@@ -112,10 +112,10 @@
                     {% endif %}
                     <div class="action-buttons">
                       {% if userType == 'Customer' %}
-                        <a href="/home/borrow/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
-                          <button class="borrow-btn">Borrow</button>
-                        </a>
-                        <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                      <a href="/home/return/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('return-form-{{ borrow.book.id }}').submit();">
+                        <button class="return-btn">Return</button>
+                      </a>
+                        <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
                           <button class="buy-btn">Buy</button>
                         </a>
 
@@ -123,7 +123,7 @@
                         <a href="/home/edit/{{ borrow.book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
-                        <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                        <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
                           <button class="delete-btn">Delete</button>
                         </a>
                       {% endif %}

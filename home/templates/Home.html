@@ -125,7 +125,7 @@
                           <button class="edit-btn">Edit</button>
                         </a>
                         <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
-                          <button class="delete-btn">Delete</button>
+                          <button class="buy-btn">Delete</button>
                         </a>
                       {% endif %}
                     </div>
@@ -205,7 +205,7 @@
                           <button class="edit-btn">Edit</button>
                         </a>
                         <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
-                          <button class="delete-btn">Delete</button>
+                          <button class="buy-btn">Delete</button>
                         </a>
                       {% endif %}
                       </div>
@@ -255,26 +255,6 @@
             {% endif %}
           </div>
         </div>
-      <div class="categories-section">
-        <div class="section-header">
-          <h3>Categories</h3>
-          <a href="/home/categories/" class="see-all-btn">See All <i class="ph ph-arrow-right"></i></a>
-        </div>
-        <div class="tags-container">
-          <div class="tags">
-            <div class="tag active" data-category-id="all">All</div>
-              {% for category in categories %}
-                <div class="tag" data-category-id="{{ category.id }}">{{ category.name }}</div>
-              {% endfor %}
-            </div>
-          </div>
-          <div id="category-books-container" class="books-row category-books category-fade-in">
-            <div class="loading-spinner">
-              <div class="spinner"></div>
-                 <p>Loading books...</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
                 
@@ -284,7 +264,6 @@
     <div class="profile-box"></div>
   </div>
 
-  <script src="{% static 'home/category-loader.js' %}"></script>
   <script src="{% static 'home/home.js' %}"></script>
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>

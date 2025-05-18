@@ -19,11 +19,7 @@ urlpatterns = [
     path('add-favorite/<int:book_id>/', views.addFavorite, name='addFavorite'),
     path('favorites/', views.getFavoriteBooks, name='favorites'),
     path('search/', views.search_books, name='search_books'),
-    path('api/filter-books-by-category/', views.filter_books_by_category, name='filter_books_by_category'),
-    path('api/all_filter-books-by-category/', views.all_filter_books_by_category, name='all_filter_books_by_category'),
     path('categories/', views.categoriesPage, name='categories'),
-    path('api/books/', views.filter_books_by_category, name='api_books'),
-    path('api/books-by-category/<str:category_id>/', views.filter_books_by_category, name='api_books_by_category'),
     path('edit/<int:book_id>', views.edit_books, name='editBook'),
 
 ]

@@ -12,19 +12,23 @@ from django.db.models import Q
 from .forms import BookForm  # تأكد إنه موجود في forms.py
 
 
-
-
 def categoriesPage(request):
   """View to display all categories and their books"""
-  # Get all categories ordered by name
+  # Get all categories ordered by book count
   categories = Category.objects.annotate(
     book_count=Count('books')
   ).order_by('-book_count')
 
+  # Get the category ID from the request (default to 'all')
+  category_id = request.GET.get('category_id', 'all')
+  current_path = request.path
+
+  # Initialize variables
   user_image = None
   username = None
-  userType=None
+  userType = None
   favorite_book_ids = []
+  books = []
 
   if request.session.get('is_logged_in'):
     try:
@@ -37,8 +41,42 @@ def categoriesPage(request):
       favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
     except Members.DoesNotExist:
       pass
-    except Exception as e:
-      print(f"Error getting user details: {e}")
+
+  # Get books based on selected category and current path
+  if category_id == 'all':
+    if '/home/categories/' in current_path:
+      # For categories page, load all books with no limit
+      books = Books.objects.all().order_by('-rating', '-ratingCount')
+    else:
+      # For home page, limit to 12 books
+      books = Books.objects.all().order_by('-rating', '-ratingCount')[:12]
+  else:
+    try:
+      # First try to get books by category ID
+      books = Books.objects.filter(book_category_id=category_id).order_by('-rating', '-ratingCount')
+
+      # If we don't have enough books, also include books with matching category name
+      if books.count() < 12:  # Minimum threshold
+        category = Category.objects.get(id=category_id)
+        additional_books = Books.objects.filter(
+          category=category.name
+        ).exclude(
+          id__in=books.values_list('id', flat=True)
+        ).order_by('-rating', '-ratingCount')
+
+        if '/home/categories/' in current_path:
+          # For categories page, include all additional books
+          books = list(books) + list(additional_books)
+        else:
+          # For home page, limit additional books to reach 12 total
+          books = list(books) + list(additional_books[:12 - books.count()])
+    except (ValueError, Category.DoesNotExist):
+      books = []
+
+  # Ensure all books have buyPrice values
+  for book in books:
+    if book.borrowPrice and not book.buyPrice:
+      book.save()  # This will trigger the save() method that calculates buyPrice
 
   return render(request, 'categories.html', {
     'is_logged_in': request.session.get('is_logged_in', False),
@@ -47,10 +85,13 @@ def categoriesPage(request):
     'username': username,
     'favorite_book_ids': list(favorite_book_ids),
     'userType': userType,
+    'books': books,
+    'current_category_id': category_id,
+    'is_home_page': '/home/homePage/' in current_path,  # Add this flag
   })
 
 
-def get_recommended_books(user, limit=12):
+def get_recommended_books(user, limit=20):
   """
     Get recommended books for a user based on borrowing history.
 
@@ -170,7 +211,7 @@ def homePage(request):
 
   # Fetch top-rated books from the database (for everyone)
   try:
-    books = Books.objects.all().order_by('-rating')[:12]
+    books = Books.objects.all().order_by('-rating')[:20]
 
     # Ensure all books have buyPrice values
     for book in books:
@@ -626,173 +667,6 @@ def getFavoriteBooks(request):
     messages.error(request, f"An error occurred: {str(e)}")
 
   return redirect('/home/homePage/')
-
-
-@require_GET
-def all_filter_books_by_category(request, category_id=None):
-  """
-    Returns books filtered by category in JSON format.
-    
-    Can be called in two ways:
-    1. /api/books/?category_id=X - category_id comes from query parameters
-    2. /api/books-by-category/X/ - category_id comes from URL path
-    
-    If category_id is 'all', returns all books
-    """
-  try:
-    # If category_id is not in path params, get from query params
-    if category_id is None:
-      category_id = request.GET.get('category_id', 'all')
-
-    if category_id == 'all':
-      books = Books.objects.all().order_by('-rating', '-ratingCount')
-    else:
-      # Try to get books by category ID first
-      try:
-        category_id = int(category_id)
-        books = Books.objects.filter(book_category_id=category_id).order_by('-rating', '-ratingCount')
-
-      except (ValueError, Category.DoesNotExist):
-        # If category_id is not a valid integer or category doesn't exist,
-        # return an empty list
-        books = []
-
-    # Prepare the data for JSON response
-    books_data = []
-    for book in books:
-      # Ensure buyPrice is set
-      if book.borrowPrice and not book.buyPrice:
-        book.save()  # This will trigger the save() method that calculates buyPrice
-
-      # Get category name
-      category_name = book.get_category or "Uncategorized"
-
-      books_data.append({
-        'id': book.id,
-        'title': book.title,
-        'author': book.author,
-        'image': book.get_image_url,
-        'rating': float(book.rating) if book.rating else 0,
-        'borrowPrice': float(book.borrowPrice) if book.borrowPrice else 0,
-        'buyPrice': float(book.buyPrice) if book.buyPrice else 0,
-        'category': category_name,
-        'pageCount': book.pageCount,
-        'ratingCount': book.ratingCount or 0,
-        'stock': book.stock,
-        'description': book.description,
-      })
-
-    return JsonResponse({
-      'success': True,
-      'books': books_data
-    })
-
-  except Exception as e:
-    return JsonResponse({
-      'success': False,
-      'error': str(e)
-    }, status=500)
-
-
-@require_GET
-def filter_books_by_category(request, category_id=None):
-  """
-    Returns books filtered by category in JSON format.
-
-    Can be called in two ways:
-    1. /api/books/?category_id=X - category_id comes from query parameters
-    2. /api/books-by-category/X/ - category_id comes from URL path
-
-    If category_id is 'all', returns all books
-    """
-  try:
-    # If category_id is not in path params, get from query params
-    if category_id is None:
-      category_id = request.GET.get('category_id', 'all')
-
-    limit = 20  # Default limit for category-specific books
-
-    # If "all" is requested, show more books
-    if category_id == 'all':
-      limit = 50
-      books = Books.objects.all().order_by('-rating', '-ratingCount')[:limit]
-    else:
-      # Try to get books by category ID first
-      try:
-        category_id = int(category_id)
-        books = Books.objects.filter(book_category_id=category_id).order_by('-rating', '-ratingCount')[:limit]
-
-        # If we don't have enough books, we might need to use the string category field too
-        if books.count() < limit:
-          # Get the category name
-          category_name = Category.objects.get(id=category_id).name
-          # Get additional books using the string category field
-          more_books = Books.objects.filter(
-            category=category_name
-          ).exclude(
-            id__in=books.values_list('id', flat=True)
-          ).order_by(
-            '-rating', '-ratingCount'
-          )[:limit - books.count()]
-
-          # Combine the querysets
-          books = list(books) + list(more_books)
-      except (ValueError, Category.DoesNotExist):
-        # If category_id is not a valid integer or category doesn't exist,
-        # return an empty list
-        books = []
-
-    # Get favorite books if user is logged in
-    favorite_book_ids = []
-    if request.session.get('is_logged_in'):
-      try:
-        user_email = request.session.get('user_email')
-        member = Members.objects.get(email=user_email)
-        favorite_book_ids = list(FavouriteBooks.objects.filter(member=member).values_list('book_id', flat=True))
-      except:
-        # If there's an error, just continue without favorites
-        pass
-
-    # Prepare the data for JSON response
-    books_data = []
-    for book in books:
-      # Ensure buyPrice is set
-      if book.borrowPrice and not book.buyPrice:
-        book.save()  # This will trigger the save() method that calculates buyPrice
-
-      # Get category name
-      category_name = book.get_category or "Uncategorized"
-
-      # Check if this book is in user's favorites
-      is_favorite = book.id in favorite_book_ids
-
-      books_data.append({
-        'id': book.id,
-        'title': book.title,
-        'author': book.author,
-        'image': book.get_image_url,
-        'rating': float(book.rating) if book.rating else 0,
-        'borrowPrice': float(book.borrowPrice) if book.borrowPrice else 0,
-        'buyPrice': float(book.buyPrice) if book.buyPrice else 0,
-        'category': category_name,
-        'pageCount': book.pageCount,
-        'ratingCount': book.ratingCount or 0,
-        'is_favorite': is_favorite,
-        'stock': book.stock,
-        'description': book.description,
-      })
-
-    return JsonResponse({
-      'success': True,
-      'books': books_data,
-      'is_logged_in': request.session.get('is_logged_in', False)
-    })
-
-  except Exception as e:
-    return JsonResponse({
-      'success': False,
-      'error': str(e)
-    }, status=500)
 
 
 def edit_books(request, book_id):

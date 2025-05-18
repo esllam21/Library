@@ -113,10 +113,10 @@
                     {% endif %}
                     <div class="action-buttons">
                       {% if userType == 'Customer' %}
-                        <a href="/home/borrow/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
+                        <a href="/home/borrow/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ favorite.book.id }}').submit();">
                           <button class="borrow-btn">Borrow</button>
                         </a>
-                        <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                        <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ favorite.book.id }}').submit();">
                           <button class="buy-btn">Buy</button>
                         </a>
 
@@ -124,8 +124,8 @@
                         <a href="/home/edit/{{ favorite.book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
-                        <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
-                          <button class="delete-btn">Delete</button>
+                        <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ favorite.book.id }}').submit();">
+                          <button class="buy-btn">Delete</button>
                         </a>
                       {% endif %}
                     </div>

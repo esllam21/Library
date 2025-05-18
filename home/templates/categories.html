@@ -5,15 +5,11 @@
   <meta charset="UTF-8">
   <title>Categories - BookBase</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
-  {% csrf_token %}
-  <meta name="csrf-token" content="{{ csrf_token }}">
-
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
@@ -105,34 +101,104 @@
           <div class="categories-section">
             <div class="tags-container">
               <div class="tags">
-                <div class="tag active" data-category-id="all">All</div>
+                <a href="?category_id=all" class="tag {% if current_category_id == 'all' %}active{% endif %}">All</a>
                 {% for category in categories %}
-                  <div class="tag" data-category-id="{{ category.id }}">
+                  <a href="?category_id={{ category.id }}" class="tag {% if current_category_id == category.id|stringformat:'s' %}active{% endif %}">
                     {{ category.name }} ({{ category.book_count }})
-                  </div>
+                  </a>
                 {% endfor %}
               </div>
             </div>
 
-            <div id="category-books-container" class="books-row category-books category-fade-in">
-              <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Loading books...</p>
-              </div>
-            </div>
+            <div class="books-row">
+              {% if books %}
+                {% for book in books %}
+                  <div class="book-card {% if book.stock == 0 %} out-of-stock {% endif %}"
+                       data-category="{% if book.book_category_id %}{{ book.book_category_id }}{% else %}{{ book.category|default:'all' }}{% endif %}"
+                       data-pages="{{ book.pageCount }}"
+                       data-rating-count="{{ book.ratingCount|default:'0' }}">
+                    <div class="book-category" style="display: none;">
+                      {{ book.book_category.name|default:book.category|default:"Uncategorized" }}
+                     </div>
+                    <div class="book-card-img">
+                      {% if book.image %}
+                        <img src="{{ book.image.url }}" alt="{{ book.title }}">
+                      {% else %}
+                        <img src="https://via.placeholder.com/150x200/e0e0e0/808080?text=No+Image" alt="{{ book.title }}">
+                      {% endif %}
+                      <div class="action-buttons">
+                        {% if userType == 'Customer' %}
+                          <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-cat-{{ book.id }}').submit();">
+                            <button class="borrow-btn" {% if book.stock == 0 %}disabled{% endif %}>Borrow</button>
+                          </a>
+                          <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-{{ book.id }}').submit();">
+                            <button class="buy-btn" {% if book.stock == 0 %}disabled{% endif %}>Buy</button>
+                          </a>
+                        {% else %}
+                          <a href="/home/edit/{{ book.id }}">
+                            <button class="edit-btn">Edit</button>
+                          </a>
+                          <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-{{ book.id }}').submit();">
+                            <button class="buy-btn">Delete</button>
+                          </a>
+                        {% endif %}
+                      </div>
+                      <form id="borrow-form-cat-{{ book.id }}" action="/home/borrow/{{ book.id }}/" method="post" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                      <form id="buy-form-cat-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                    </div>
+                    <div class="book-card-content">
+                      <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
+                        <span class="book-title">{{ book.title }}</span>
+                        {% if book.id in favorite_book_ids %}
+                          <i class="ph-fill ph-heart-straight" style="color: red;"
+                             onclick="event.preventDefault(); document.getElementById('favorite-form-cat-{{ book.id }}').submit();"></i>
+                        {% else %}
+                          <i class="ph ph-heart-straight"
+                             onclick="event.preventDefault(); document.getElementById('favorite-form-cat-{{ book.id }}').submit();"></i>
+                        {% endif %}
+                      </div>
+                      <form id="favorite-form-cat-{{ book.id }}" action="/home/add-favorite/{{ book.id }}/" method="post" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                      <div class="book-info">
+                        <span class="book-author">{{ book.author }}</span>
+                        <div class="book-rating">
+                          <i class="ph ph-star-fill"></i>
+                          <span>{{ book.rating|default:"N/A" }}</span>
+                        </div>
+                      </div>
+                      <div class="book-prices">
+                        <div class="book-price">${{ book.borrowPrice }}</div>
+                        <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
 
+                      </div>
+                      <div class="book-id" style="display: none">{{ book.id }}</div>
+                      <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="no-books-message">
+                  No books found in this category.
+                </div>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div class="profile-box"></div>
-
   </div>
+
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
-  <script src="{% static 'home/category-loader.js' %}"></script>
+  <script src="{% static 'home/categories.js' %}"></script>
   <script>
-    window.favorite_book_ids={{ favorite_book_ids|safe }}
+    window.favorite_book_ids = {{ favorite_book_ids|safe }};
   </script>
 </body>
 </html>
