@@ -8,9 +8,11 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/profile-box.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
+  <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
@@ -102,7 +104,8 @@
             <div class="books-row">
               {% for book in books %}
 
-                <div class="book-card {% if book.stock == 0 %}out-of-stock{% endif %}"
+                <div class="book-card {% if book.stock == 0 %}out-of-stock{% endif %} {% if book.id in borrowed_book_ids %}borrowed-status{% endif %}
+                    {% if book.id in owned_book_ids %}owned-status{% endif %}"
                      data-category="{% if book.get_category %}{{ book.get_category }}{% else %}Fiction{% endif %}"
                      data-pages="{{ book.pageCount }}"
                      data-rating-count="{{ book.ratingCount|default:'0' }}">
@@ -127,6 +130,12 @@
                         </a>
                         <a href="/home/delete/{{ book.id }}">
                           <button class="delete-btn">Delete</button>
+                        </a>
+                        <a href="/home/borrow/{{ book.id }}" style="display: none">
+                          <button class="borrow-btn" style="display: none">Borrow</button>
+                        </a>
+                        <a href="/home/buy/{{ book.id }}" style="display: none">
+                          <button class="buy-btn" style="display: none">Buy</button>
                         </a>
                       {% endif %}
                     </div>
@@ -196,29 +205,7 @@
           e.preventDefault();
           window.location.href = `/home/search/?q=${encodeURIComponent(this.value)}`;
         }
-      });
-      
-      // Navigation via sidebar
-      document.getElementById('home-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'homepage' %}";
-      });
-
-      document.getElementById('categories-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'categories' %}";
-      });
-
-      document.getElementById('borrowed-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'borrowedBooks' %}";
-      });
-
-      document.getElementById('favourites-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'favorites' %}";
-      });
-
-      document.getElementById('logout-btn').addEventListener('click', function() {
-        window.location.href = "{% url 'logout' %}";
-      });
-    });
+      });});
   </script>
 </body>
 </html>

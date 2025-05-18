@@ -7,9 +7,11 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/profile-box.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
+  <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
@@ -113,7 +115,8 @@
             <div class="books-row">
               {% if books %}
                 {% for book in books %}
-                  <div class="book-card {% if book.stock == 0 %} out-of-stock {% endif %}"
+                  <div class="book-card {% if book.stock == 0 %} out-of-stock {% endif %} {% if book.id in borrowed_book_ids %}borrowed-status{% endif %}
+                    {% if book.id in owned_book_ids %}owned-status{% endif %}"
                        data-category="{% if book.book_category_id %}{{ book.book_category_id }}{% else %}{{ book.category|default:'all' }}{% endif %}"
                        data-pages="{{ book.pageCount }}"
                        data-rating-count="{{ book.ratingCount|default:'0' }}">
@@ -140,6 +143,12 @@
                           </a>
                           <a href="/home/delete/{{ book.id }}">
                             <button class="delete-btn">Delete</button>
+                          </a>
+                          <a href="/home/borrow/{{ book.id }}" style="display: none">
+                            <button class="borrow-btn" {% if book.stock == 0 %}disabled{% endif %} style="display: none">Borrow</button>
+                          </a>
+                          <a href="/home/buy/{{ book.id }}">
+                            <button class="buy-btn" {% if book.stock == 0 %}disabled{% endif %} style="display: none">Buy</button>
                           </a>
                         {% endif %}
                       </div>

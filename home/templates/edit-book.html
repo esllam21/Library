@@ -3,16 +3,15 @@
 {% load static %}
 <head>
   <meta charset="UTF-8">
-  <title>BookBase</title>
+  <title>Edit Book - BookBase</title>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/add-book.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
-  <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
 </head>
-<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
+<body data-logged-in="{{ is_logged_in|lower }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
@@ -37,12 +36,12 @@
     </div>
   </div>
 
-  <!-- Main Layout: Sidebar + Content + Profile Box -->
+  <!-- Main Layout: Sidebar + Content -->
   <div class="main-content-area">
     <!-- Left: Sidebar -->
     <div class="sidebar">
       <ul>
-        <li class="active" id="home-btn">
+        <li id="home-btn">
           <span class="icon-wrapper"><i class="ph ph-house"></i></span>
           <span class="label">Discover</span>
         </li>
@@ -84,37 +83,126 @@
           <li id="login-btn">
             <span class="icon-wrapper"><i class="ph ph-sign-in"></i></span>
             <span class="label">Sign in</span>
+          </li>
         {% endif %}
-        <div style="height: 20px"></div>
       </ul>
     </div>
+
     <!-- Middle: Main Content -->
     <div class="content-wrapper">
       <div class="main">
-<form method="post">
-  {% csrf_token %}
-{% for field in form %}
-  <div class="featured">
-    <div class="section-header">
-      <h3>{{ field.label }}</h3>
-      {% if field.errors %}
-        <div class="errorlist">{{ field.errors }}</div>
-      {% endif %}
-    </div>
-      {{ field }}
-  </div>
-{% endfor %}
-  <button type="submit">Save Changes</button>
-</form>
+        <div class="featured">
+          <div class="section-header">
+            <h3>Edit Book</h3>
+            <a href="/home/homePage/" class="see-all-btn">Back to Home <i class="ph ph-arrow-left"></i></a>
+          </div>
+
+          <div class="add-book-form">
+            <form method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+
+              {% if messages %}
+                <div class="form-messages">
+                  {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Title*</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                  <div class="errorlist">{{ form.title.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label for="{{ form.author.id_for_label }}">Author*</label>
+                {{ form.author }}
+                {% if form.author.errors %}
+                  <div class="errorlist">{{ form.author.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                  <div class="errorlist">{{ form.description.errors }}</div>
+                {% endif %}
+              </div>
+              <div class="form-group">
+                <label for="{{ form.book_category.id_for_label }}"></label>
+                {{ form.book_category }}
+                {% if form.book_category.errors %}
+                  <div class="errorlist">{{ form.book_category.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="{{ form.pageCount.id_for_label }}">Page Count</label>
+                  {{ form.pageCount }}
+                  {% if form.pageCount.errors %}
+                    <div class="errorlist">{{ form.pageCount.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="{{ form.buyPrice.id_for_label }}">Buy Price</label>
+                  {{ form.buyPrice }}
+                  {% if form.buyPrice.errors %}
+                    <div class="errorlist">{{ form.buyPrice.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="{{ form.borrowPrice.id_for_label }}">Borrow Price*</label>
+                  {{ form.borrowPrice }}
+                  {% if form.borrowPrice.errors %}
+                    <div class="errorlist">{{ form.borrowPrice.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="{{ form.stock.id_for_label }}">Stock*</label>
+                  {{ form.stock }}
+                  {% if form.stock.errors %}
+                    <div class="errorlist">{{ form.stock.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">Book Cover Image</label>
+                {{ form.image }}
+                {% if form.instance.image %}
+                  <div class="image-preview">
+                    <p>Current image:</p>
+                    <img src="{{ form.instance.image.url }}" alt="Current book cover" style="max-width: 200px;">
+                  </div>
+                {% endif %}
+                {% if form.image.errors %}
+                  <div class="errorlist">{{ form.image.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="submit-btn">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
-  <script src="{% static 'home/category-loader.js' %}"></script>
-  <script src="{% static 'home/home.js' %}"></script>
+  </div>
+
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
-  <script>
-    // Make favorite book IDs available to JavaScript
-    window.favorite_book_ids = {{ favorite_book_ids|safe }};
-  </script>
 </body>
 </html>

@@ -33,12 +33,21 @@ def categoriesPage(request):
   favorite_book_ids = []
   books = []
 
+
   if request.session.get('is_logged_in'):
     try:
       user = Members.objects.get(email=request.session.get('user_email'))
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
       userType = user.user_type
+      # Get borrowed and owned books using the Members instance, not request.user
+      borrowed_book_ids = BorrowedBook.objects.filter(
+        member=user  # Changed from request.user to user
+      ).values_list('book_id', flat=True)
+
+      owned_book_ids = OwnedBooks.objects.filter(
+        member=user  # Changed from request.user to user
+      ).values_list('book_id', flat=True)
 
       # Get user's favorite books
       favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
@@ -91,38 +100,44 @@ def categoriesPage(request):
     'books': books,
     'current_category_id': category_id,
     'is_home_page': '/home/homePage/' in current_path,  # Add this flag
+    'borrowed_book_ids': borrowed_book_ids,
+    'owned_book_ids': owned_book_ids,
   })
 
 
 def get_recommended_books(user, limit=20):
   """
-    Get recommended books for a user based on borrowing history.
+  Get recommended books for a user based on borrowing history.
+  Excludes books that are either borrowed or owned by the user.
 
-    Logic:
-    1. Find the most common categories from user's borrowed books
-    2. Recommend highly rated books from those categories
-    3. Exclude books the user has already borrowed
-    4. Order recommendations by rating
-    """
+  Logic:
+  1. Find the most common categories from user's borrowed books
+  2. Recommend highly rated books from those categories
+  3. Exclude books the user has already borrowed or owned
+  4. Order recommendations by rating
+  """
   try:
-    # Get all books the user has borrowed (including returned ones)
+    # Get all books the user has borrowed or owned
     borrowed_books = BorrowedBook.objects.filter(member=user)
+    owned_books = OwnedBooks.objects.filter(member=user)
 
     # If user has no borrowing history, return empty list
-    if not borrowed_books.exists():
+    if not borrowed_books.exists() and not owned_books.exists():
       return []
 
-    # Get the book IDs the user has already borrowed
+    # Get the book IDs the user has already borrowed or owned
     borrowed_book_ids = borrowed_books.values_list('book_id', flat=True)
+    owned_book_ids = owned_books.values_list('book_id', flat=True)
+    excluded_book_ids = set(borrowed_book_ids) | set(owned_book_ids)
 
-    # Get borrowed books
-    borrowed_book_objects = Books.objects.filter(id__in=borrowed_book_ids)
+    # Get borrowed/owned books to analyze categories
+    user_books = Books.objects.filter(id__in=excluded_book_ids)
 
-    # Get categories of borrowed books - prioritize book_category field but fall back to category field
+    # Get categories of user's books
     category_ids = []
     category_names = []
 
-    for book in borrowed_book_objects:
+    for book in user_books:
       if book.book_category_id:
         category_ids.append(book.book_category_id)
       elif book.category:
@@ -140,8 +155,8 @@ def get_recommended_books(user, limit=20):
     if not top_category_ids and not top_category_names:
       return []
 
-    # Get recommended books, prioritizing books with matching category IDs
-    recommended_books_query = Books.objects.exclude(id__in=borrowed_book_ids)
+    # Get recommended books, excluding borrowed or owned books
+    recommended_books_query = Books.objects.exclude(id__in=excluded_book_ids)
 
     if top_category_ids:
       # First try to get books with matching category IDs
@@ -155,7 +170,7 @@ def get_recommended_books(user, limit=20):
       if recommended_books.count() >= limit:
         return recommended_books
 
-      # Otherwise, we'll also include books with matching category names
+      # Otherwise, include books with matching category names
       remaining_limit = limit - recommended_books.count()
       recommended_books_from_names = recommended_books_query.filter(
         category__in=top_category_names
@@ -167,7 +182,6 @@ def get_recommended_books(user, limit=20):
 
       # Combine the two querysets
       return list(recommended_books) + list(recommended_books_from_names)
-
     else:
       # Fallback to using just the category names
       return recommended_books_query.filter(
@@ -179,7 +193,6 @@ def get_recommended_books(user, limit=20):
   except Exception as e:
     print(f"Error generating recommendations: {e}")
     return []
-
 
 def homePage(request):
   userType=None
@@ -195,6 +208,14 @@ def homePage(request):
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
       userType= user.user_type
+      # Get borrowed and owned books using the Members instance, not request.user
+      borrowed_book_ids = BorrowedBook.objects.filter(
+        member=user  # Changed from request.user to user
+      ).values_list('book_id', flat=True)
+
+      owned_book_ids = OwnedBooks.objects.filter(
+        member=user  # Changed from request.user to user
+      ).values_list('book_id', flat=True)
 
       # Get personalized book recommendations if user is logged in
       recommended_books = get_recommended_books(user)
@@ -244,6 +265,9 @@ def homePage(request):
     'categories': categories,
     'favorite_book_ids': list(favorite_book_ids),
     'userType': userType,
+    'borrowed_book_ids': borrowed_book_ids,
+    'owned_book_ids': owned_book_ids,
+
   })
 
 
@@ -260,7 +284,7 @@ def login(request):
       request.session['userID'] = user.id
 
       if user.user_type == 'Admin':
-        return redirect('/home/adminDashboard/')
+        return redirect('/home/homePage/')
       else:
         return redirect('/home/homePage/')
     except Members.DoesNotExist:
@@ -306,63 +330,8 @@ def signup(request):
   return render(request, 'signup.html')
 
 
-def borrowedBooksUser(request):
-  user_image = None
-  username = None
-  user = None
-  userType=None
-  favorite_book_ids = []
-
-  if request.session.get('is_logged_in'):
-    try:
-      user_email = request.session.get('user_email')
-      user = get_object_or_404(Members, email=user_email)
-      user_image = user.image.url if user.image else '/static/images/default-user.png'
-      username = user.username
-      userType= user.user_type
-
-      # Get user's borrowed and owned books
-      borrowed_books = BorrowedBook.objects.filter(member=user, returned=False)
-      owned_books = OwnedBooks.objects.filter(member=user)
-
-      # Get user's favorite books
-      favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
-    except Exception as e:
-      print(f"Error getting user details: {e}")
-      borrowed_books = []
-      owned_books = []
-  else:
-    return redirect('login')  # Redirect to login if not logged in
-
-  # Get top 10 categories with most books for display
-  try:
-    # Annotate categories with book count and order by count (descending)
-    categories = Category.objects.annotate(
-      book_count=Count('books')
-    ).order_by('-book_count')[:10]
-  except Exception as e:
-    print(f"Error fetching categories: {e}")
-    categories = []
-
-  return render(request, 'borrowed-books-user.html', {
-    'is_logged_in': request.session.get('is_logged_in', False),
-    'user_image': user_image,
-    'username': username,
-    'borrowed_books': borrowed_books,
-    'owned_books': owned_books,
-    'categories': categories,
-    'favorite_book_ids': list(favorite_book_ids),
-    'userType': userType,
-  })
 
 
-def borrowedBooksAdmin(request):
-  user_email = request.session.get('user_email')
-  member = get_object_or_404(Members, email=user_email)
-  borrowed_books = BorrowedBook.objects.filter(member=member, returned=False)
-  all_borrowed_books = Books.objects.all()
-  return render(request, 'borrowed-books-admin.html',
-                {'borrowed_books': borrowed_books, 'all_borrowed_books': all_borrowed_books})
 
 
 def adminDashboard(request):
@@ -540,6 +509,8 @@ def borrowBook(request, book_id):
 
 
 def search_books(request):
+  borrowed_book_ids=[]
+  owned_book_ids=[]
   userType = None
   user_image = None
   username = None
@@ -563,6 +534,14 @@ def search_books(request):
       user_image = user.image.url if user.image else '/static/images/default-user.png'
       username = user.username
       stock=request.session.get('stock')
+      # Get borrowed and owned books using the Members instance, not request.user
+      borrowed_book_ids = BorrowedBook.objects.filter(
+        member=user  # Changed from request.user to user
+      ).values_list('book_id', flat=True)
+
+      owned_book_ids = OwnedBooks.objects.filter(
+        member=user  # Changed from request.user to user
+      ).values_list('book_id', flat=True)
     return render(request, 'search_results.html', {
       'books': books,
       'query': query,
@@ -572,6 +551,8 @@ def search_books(request):
       'user_image': user_image,
       'stock': stock,
       'userType': userType,
+      'borrowed_book_ids': borrowed_book_ids,
+      'owned_book_ids': owned_book_ids,
     })
   else:
     # If no query provided, redirect to home
@@ -673,26 +654,32 @@ def getFavoriteBooks(request):
   if not request.session.get('is_logged_in'):
     messages.error(request, "Please log in to view favorites")
     return redirect('/home/login/')
-  userType=None
-  user_image = None
-  username = None
-  user = None
+
   try:
     user = Members.objects.get(email=request.session.get('user_email'))
     favorite_books = FavouriteBooks.objects.filter(member=user).select_related('book')
-    userType=user.user_type
-    user_image = user.image.url if user.image else '/static/images/default-user.png'
-    username = user.username
+
+    # Get borrowed and owned books using the Members instance, not request.user
+    borrowed_book_ids = BorrowedBook.objects.filter(
+      member=user  # Changed from request.user to user
+    ).values_list('book_id', flat=True)
+
+    owned_book_ids = OwnedBooks.objects.filter(
+      member=user  # Changed from request.user to user
+    ).values_list('book_id', flat=True)
+
     # Get favorite book IDs for heart icon display
     favorite_book_ids = list(favorite_books.values_list('book_id', flat=True))
 
     return render(request, 'favorites.html', {
       'is_logged_in': True,
-      'user_image': user_image,
-      'username': username,
+      'user_image': user.image.url if user.image else '/static/images/default-user.png',
+      'username': user.username,
       'favorite_books': favorite_books,
       'favorite_book_ids': favorite_book_ids,
-      'userType': userType,
+      'userType': user.user_type,
+      'borrowed_book_ids': list(borrowed_book_ids),
+      'owned_book_ids': list(owned_book_ids),
     })
 
   except Members.DoesNotExist:
@@ -701,7 +688,6 @@ def getFavoriteBooks(request):
     messages.error(request, f"An error occurred: {str(e)}")
 
   return redirect('/home/homePage/')
-
 
 def edit_books(request, book_id):
     userType = None
@@ -799,7 +785,7 @@ def borrowed_books_view(request):
   except Exception as e:
     print(f"Error fetching borrowed/owned books: {e}")
 
-  return render(request, 'borrowed-books-admin.html', {
+  return render(request, 'borrowed-books.html', {
     'is_logged_in': request.session.get('is_logged_in', False),
     'user_image': user_image,
     'username': username,

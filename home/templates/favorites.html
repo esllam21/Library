@@ -8,9 +8,11 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/profile-box.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
+  <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
 </head>
 <body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
@@ -101,7 +103,9 @@
           {% if favorite_books %}
             <div class="books-row">
               {% for favorite in favorite_books %}
-                <div class="book-card" 
+                <div class="book-card
+                    {% if favorite.book.stock == 0 %}out-of-stock{% endif %} {% if favorite.book.id in borrowed_book_ids %}borrowed-status{% endif %}
+                    {% if favorite.book.id in owned_book_ids %}owned-status{% endif %}"
                      data-category="{% if favorite.book.get_category %}{{ favorite.book.get_category }}{% else %}Fiction{% endif %}"
                      data-pages="{{ favorite.book.pageCount }}"
                      data-rating-count="{{ favorite.book.ratingCount|default:'0' }}">
@@ -126,6 +130,12 @@
                         </a>
                         <a href="/home/delete/{{ favorite.book.id }}">
                           <button class="delete-btn">Delete</button>
+                        </a>
+                        <a href="/home/borrow/{{ favorite.book.id }}" style="display: none">
+                          <button class="borrow-btn" style="display: none">Borrow</button>
+                        </a>
+                        <a href="/home/buy/{{ favorite.book.id }}" style="display: none">
+                          <button class="buy-btn" style="display: none">Buy</button>
                         </a>
                       {% endif %}
                     </div>

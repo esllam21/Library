@@ -98,36 +98,32 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="category">${bookCategory}</div>
         <div class="rating">${stars}</div>
         <div class="meta">Author: ${bookAuthor}</div>
-        <div class="meta">${bookDes}</div>
+        <div class="meta"> ${bookDes}</div>
         
         <div class="meta-row">
           <span class="meta">${pages} Pages</span>
           <span class="meta-separator"></span>
           <span class="meta">${reviewCount} Ratings</span>
         </div>
+        <div class="meta-row">
+          <div class="meta">Borrow: ${borrowPrice}</div>
+          <span class="meta-separator"></span>
+          <div class="meta">Buy: ${buyPrice}</div>
+        </div>
         ${ document.body.getAttribute('data-user-type') === 'Admin' ? `<div class="meta-row">
             <div class="meta">Stock: ${stock}</div>
             <span class="meta-separator"></span>
             <div class="meta">Count: ${count}</div>
-          </div>` 
-          : `<div class="meta">Borrow: ${borrowPrice}</div>
-            <span class="meta-separator"></span>
-            <div class="meta">Buy: ${buyPrice}</div>`}
-
-        
+          </div>` : ``}
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-          ${
-            document.body.getAttribute('data-user-type') === 'Admin' 
-              ? `
-                <button class="profile-edit-btn" style="flex: 1; background-color:#4361ee">Edit</button>
-                <button class="profile-delete-btn" style="flex: 1; background-color: #ff5151">Delete</button>
-              `
-              : `
-                <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
-                <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>
-              `
-          }
+          <button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
+            <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>
         </div>
+        ${document.body.getAttribute('data-user-type') === 'Admin' ? `
+          <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
+            <button class="profile-edit-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
+            <button class="profile-delete-btn" style="flex: 1; background-color: #ff5151">Delete</button>
+          </div>` : ``}
       `;
 
 

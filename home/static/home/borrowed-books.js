@@ -23,8 +23,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
     const bookDes = bookCard.querySelector('.book-des')?.textContent || 'No description available.';
-    const stock=bookCard.querySelector('.stock')?.textContent || "0";
-    const count=bookCard.querySelector('.count')?.textContent || "0";
 
     // Get rating if available, otherwise use placeholder
     let bookRating = "N/A";
@@ -32,8 +30,12 @@ document.addEventListener("DOMContentLoaded", function() {
     if (ratingElement) {
       bookRating = ratingElement.textContent;
     }
-
-    // Get prices
+    const borrowPrice = bookCard.querySelector('.book-price')?.textContent || "$0.00";
+    const buyPrice = bookCard.querySelector('.buy-price')?.textContent || "$0.00";
+    const id = bookCard.querySelector('.book-id')?.textContent || "0";
+    const stock = bookCard.querySelector('.stock')?.textContent || "0";
+    const count = bookCard.querySelector('.count')?.textContent || "0";
+        // Get prices
 
     // Create star rating display
     let stars = "";
@@ -132,26 +134,32 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="category">${bookCategory}</div>
         <div class="rating">${stars}</div>
         <div class="meta">Author: ${bookAuthor}</div>
-        <div class="meta">${bookDes}</div>
+        <div class="meta"> ${bookDes}</div>
         
         <div class="meta-row">
           <span class="meta">${pages} Pages</span>
           <span class="meta-separator"></span>
           <span class="meta">${reviewCount} Ratings</span>
         </div>
-        ${ document.body.getAttribute('data-user-type') === 'Admin' ? `
         <div class="meta-row">
+          <div class="meta">${borrowPrice}</div>
+          <span class="meta-separator"></span>
+          <div class="meta">${buyPrice}</div>
+        </div>
+        ${ document.body.getAttribute('data-user-type') === 'Admin' ? `<div class="meta-row">
             <div class="meta">Stock: ${stock}</div>
             <span class="meta-separator"></span>
             <div class="meta">Count: ${count}</div>
-        </div>`:''}
-        <div class="meta">${bookCard.querySelector('.book-price')?.textContent}</div>
-        
-        
+          </div>` : ``}
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-          <button class="profile-return-btn" style="flex: 1; background-color: #ff5151;">Return</button>
-          <button class="profile-buy-btn" style="flex: 1; background-color: #10b981;">Buy</button>
+          <button class="profile-return-btn" style="flex: 1; background-color: #ff5151">Return</button>
+          <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>
         </div>
+        ${document.body.getAttribute('data-user-type') === 'Admin' ? `
+          <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
+            <button class="profile-edit-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
+            <button class="profile-delete-btn" style="flex: 1; background-color: #ff5151">Delete</button>
+          </div>` : ``}
       `;
 
       // Remove fade class to trigger fade-in animation

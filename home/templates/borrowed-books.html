@@ -7,6 +7,8 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/profile-box.css' %}">
+  <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
 </head>
@@ -113,17 +115,35 @@
 
                 <div class="books-row">
                   {% for borrowed in member.borrowed_books %}
-                    <div class="book-card borrowed-status">
+                    <div class="book-card borrowed-status" data-category="{% if borrowed.book.get_category %}{{ borrowed.book.get_category }}{% else %}Fiction{% endif %}"
+                     data-pages="{{ borrowed.book.pageCount }}"
+                     data-rating-count="{{ borrowed.book.ratingCount|default:'0' }}">
                       <div class="book-card-img">
                         <img src="{{ borrowed.book.image.url }}" alt="{{ borrowed.book.title }}">
-                        <div class="action-buttons">
-                          <a href="/home/return/{{ borrowed.book.id }}">
-                            <button class="return-btn">Return</button>
-                          </a>
-                          <a href="{% url 'buyBook' borrowed.book.id %}">
-                            <button class="buy-btn">Buy Now</button>
-                          </a>
-                        </div>
+                    <div class="action-buttons">
+                      {% if userType == 'Customer' %}
+                        <a href="/home/return/{{ borrowed.book.id }}" >
+                          <button class="return-btn">Return</button>
+                        </a>
+                        <a href="/home/buy/{{ borrowed.book.id }}">
+                          <button class="buy-btn">Buy</button>
+                        </a>
+
+                      {% else %}
+                        <a href="/home/edit/{{ borrowed.book.id }}">
+                          <button class="edit-btn">Edit</button>
+                        </a>
+                        <a href="/home/delete/{{ borrowed.book.id }}">
+                          <button class="delete-btn">Delete</button>
+                        </a>
+                        <a href="/home/return/{{ borrowed.book.id }}"  style="display: none">
+                          <button class="return-btn" style="display: none">Borrow</button>
+                        </a>
+                        <a href="/home/buy/{{ borrowed.book.id }}" style="display: none">
+                          <button class="buy-btn" style="display: none">Buy</button>
+                        </a>
+                      {% endif %}
+                    </div>
                       </div>
                       <div class="book-card-content">
                         <span class="book-title">{{ borrowed.book.title }}</span>
@@ -135,8 +155,8 @@
                           </div>
                         </div>
                         <div class="book-prices">
-                          <div class="book-price">Borrowed: ${{ borrowed.book.borrowPrice }}</div>
-                          <div class="buy-price">Buy: ${{ borrowed.book.buyPrice|default:borrowed.book.calculated_buy_price }}</div>
+                          <div class="book-price" style="display: none">Borrow: ${{ borrowed.book.borrowPrice }}</div>
+                          <div class="buy-price" style="display: none">Buy: ${{ borrowed.book.buyPrice|default:borrowed.book.calculated_buy_price }}</div>
                             <div class="book-id" style="display: none">{{ borrowed.book.id }}</div>
                             <div class="stock" style="display: none">{{ borrowed.book.stock }}</div>
                             <div class="count" style="display: none">{{ borrowed.book.count }}</div>
@@ -162,7 +182,9 @@
 
                 <div class="books-row">
                   {% for owned in member.owned_books %}
-                    <div class="book-card owned-status">
+                    <div class="book-card owned-status" data-category="{% if owned.book.get_category %}{{ owned.book.get_category }}{% else %}Fiction{% endif %}"
+                     data-pages="{{ owned.book.pageCount }}"
+                     data-rating-count="{{ owned.book.ratingCount|default:'0' }}">
                       <div class="book-card-img">
                         <img src="{{ owned.book.get_image_url }}" alt="{{ owned.book.title }}">
                         <div class="action-buttons">
@@ -177,6 +199,14 @@
                             <i class="ph ph-star-fill"></i>
                             <span>{{ owned.book.rating|default:"N/A" }}</span>
                           </div>
+                        </div>
+                        <div class="book-prices">
+                          <div class="book-price" style="display: none">Borrowed: ${{ owned.book.buyPrice }}</div>
+                          <div class="buy-price" style="display: none">Buy: ${{ owned.book.buyPrice|default:owned.book.calculated_buy_price }}</div>
+                            <div class="book-id" style="display: none">{{ owned.book.id }}</div>
+                            <div class="stock" style="display: none">{{ owned.book.stock }}</div>
+                            <div class="count" style="display: none">{{ owned.book.count }}</div>
+                            <div class="book-des" style="display: none;">{{ owned.book.description|default:"No description available." }}</div>
                         </div>
                         <div class="purchase-date" style="font-size: 11px; color: #6b7280; margin-top: 5px;">
                           Purchased on: {{ owned.purchase_date|date:"M d, Y" }}
@@ -204,7 +234,7 @@
     <div class="profile-box"></div>
   </div>
 
-  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/borrowed-books.js' %}"></script>
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
   <script>

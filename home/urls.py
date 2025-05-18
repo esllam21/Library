@@ -10,7 +10,6 @@ urlpatterns = [
     path('signup/', views.signup, name="signup"),
     path('addBooks/', views.addBooks, name="addBook"),
     path('borrowedBooks/', views.borrowed_books_view, name="borrowBookAdmin"),
-    path('borrowedBooksUser/', views.borrowedBooksUser, name='borrowedBooks'),
     path('adminDashboard/', views.adminDashboard, name="adminDashboard"),
     path('unauthorized/', views.unauthorized, name="unauthorized"),
     path('borrow/<int:book_id>/', views.borrowBook, name='borrowBook'),

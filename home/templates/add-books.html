@@ -7,6 +7,7 @@
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'home/home.css' %}">
+  <link rel="stylesheet" href="{% static 'home/add-book.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
 </head>
@@ -188,40 +189,6 @@
 
   <script src="{% static 'home/sidebar.js' %}"></script>
   <script src="{% static 'home/navbar.js' %}"></script>
-  <script>
-    // Image preview functionality
-    document.getElementById('image').addEventListener('change', function(e) {
-      const preview = document.getElementById('imagePreview');
-      preview.innerHTML = '';
-
-      if (this.files && this.files[0]) {
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          img.style.maxWidth = '200px';
-          img.style.maxHeight = '300px';
-          img.style.marginTop = '10px';
-          img.style.borderRadius = '4px';
-          preview.appendChild(img);
-        }
-
-        reader.readAsDataURL(this.files[0]);
-      }
-    });
-
-    // Highlight the active sidebar item
-    document.addEventListener('DOMContentLoaded', function() {
-      const currentPath = window.location.pathname;
-      const sidebarItems = document.querySelectorAll('.sidebar li');
-
-      sidebarItems.forEach(item => {
-        item.classList.remove('active');
-      });
-
-      document.getElementById('addBook-btn').classList.add('active');
-    });
-  </script>
+  <script src="{% static 'home/add-book.js' %}"></script>
 </body>
 </html>
