@@ -128,27 +128,21 @@
                       {% endif %}
                       <div class="action-buttons">
                         {% if userType == 'Customer' %}
-                          <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-cat-{{ book.id }}').submit();">
+                          <a href="/home/borrow/{{ book.id }}">
                             <button class="borrow-btn" {% if book.stock == 0 %}disabled{% endif %}>Borrow</button>
                           </a>
-                          <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-{{ book.id }}').submit();">
+                          <a href="/home/buy/{{ book.id }}">
                             <button class="buy-btn" {% if book.stock == 0 %}disabled{% endif %}>Buy</button>
                           </a>
                         {% else %}
                           <a href="/home/edit/{{ book.id }}">
                             <button class="edit-btn">Edit</button>
                           </a>
-                          <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-cat-{{ book.id }}').submit();">
-                            <button class="buy-btn">Delete</button>
+                          <a href="/home/delete/{{ book.id }}">
+                            <button class="delete-btn">Delete</button>
                           </a>
                         {% endif %}
                       </div>
-                      <form id="borrow-form-cat-{{ book.id }}" action="/home/borrow/{{ book.id }}/" method="post" style="display: none;">
-                        {% csrf_token %}
-                      </form>
-                      <form id="buy-form-cat-{{ book.id }}" action="/home/buy/{{ book.id }}/" method="post" style="display: none;">
-                        {% csrf_token %}
-                      </form>
                     </div>
                     <div class="book-card-content">
                       <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
@@ -177,6 +171,8 @@
 
                       </div>
                       <div class="book-id" style="display: none">{{ book.id }}</div>
+                      <div class="stock" style="display: none">{{ book.stock }}</div>
+                      <div class="count" style="display: none">{{ book.count }}</div>
                       <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
                     </div>
                   </div>

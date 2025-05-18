@@ -113,10 +113,10 @@
                     {% endif %}
                     <div class="action-buttons">
                       {% if userType == 'Customer' %}
-                        <a href="/home/borrow/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ favorite.book.id }}').submit();">
+                        <a href="/home/borrow/{{ favorite.book.id }}">
                           <button class="borrow-btn">Borrow</button>
                         </a>
-                        <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ favorite.book.id }}').submit();">
+                        <a href="/home/buy/{{ favorite.book.id }}">
                           <button class="buy-btn">Buy</button>
                         </a>
 
@@ -124,17 +124,11 @@
                         <a href="/home/edit/{{ favorite.book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
-                        <a href="/home/buy/{{ favorite.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ favorite.book.id }}').submit();">
-                          <button class="buy-btn">Delete</button>
+                        <a href="/home/delete/{{ favorite.book.id }}">
+                          <button class="delete-btn">Delete</button>
                         </a>
                       {% endif %}
                     </div>
-                    <form id="borrow-form-{{ favorite.book.id }}" action="{% url 'borrowBook' favorite.book.id %}" method="post" style="display: none;">
-                      {% csrf_token %}
-                    </form>
-                    <form id="buy-form-{{ favorite.book.id }}" action="{% url 'buyBook' favorite.book.id %}" method="post" style="display: none;">
-                      {% csrf_token %}
-                    </form>
                   </div>
                   <div class="book-card-content">
                     <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
@@ -157,6 +151,8 @@
                       <div class="book-price">${{ favorite.book.borrowPrice }}</div>
                       <div class="buy-price">${{ favorite.book.buyPrice|default:favorite.book.calculated_buy_price }}</div>
                       <div class="book-id" style="display: none">{{ favorite.book.id }}</div>
+                      <div class="stock" style="display: none">{{ favorite.book.stock }}</div>
+                      <div class="count" style="display: none">{{ favorite.book.count }}</div>
                     </div>
                     <div class="book-des" style="display: none;">{{ favorite.book.description|default:"No description available." }}</div>
 

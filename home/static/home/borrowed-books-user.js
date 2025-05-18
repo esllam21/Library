@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const bookTitle = bookCard.querySelector('.book-title').textContent;
     const bookAuthor = bookCard.querySelector('.book-author').textContent;
     const bookDes = bookCard.querySelector('.book-des')?.textContent || 'No description available.';
+    const stock=bookCard.querySelector('.stock')?.textContent || "0";
+    const count=bookCard.querySelector('.count')?.textContent || "0";
 
     // Get rating if available, otherwise use placeholder
     let bookRating = "N/A";
@@ -137,7 +139,13 @@ document.addEventListener("DOMContentLoaded", function() {
           <span class="meta-separator"></span>
           <span class="meta">${reviewCount} Ratings</span>
         </div>
-        <div class="meta">Borrowed Date: ${bookCard.querySelector('.book-price')?.textContent.replace('Borrowed: ', '') || 'N/A'}</div>
+        ${ document.body.getAttribute('data-user-type') === 'Admin' ? `
+        <div class="meta-row">
+            <div class="meta">Stock: ${stock}</div>
+            <span class="meta-separator"></span>
+            <div class="meta">Count: ${count}</div>
+        </div>`:''}
+        <div class="meta">${bookCard.querySelector('.book-price')?.textContent}</div>
         
         
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">

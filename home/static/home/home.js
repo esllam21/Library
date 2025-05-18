@@ -36,6 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const borrowPrice = bookCard.querySelector('.book-price')?.textContent || "$0.00";
     const buyPrice = bookCard.querySelector('.buy-price')?.textContent || "$0.00";
     const id = bookCard.querySelector('.book-id')?.textContent || "0";
+    const stock = bookCard.querySelector('.stock')?.textContent || "0";
+    const count = bookCard.querySelector('.count')?.textContent || "0";
     
     // Create star rating display
     let stars = "";
@@ -141,15 +143,21 @@ document.addEventListener("DOMContentLoaded", function () {
           <span class="meta-separator"></span>
           <span class="meta">${reviewCount} Ratings</span>
         </div>
-        
-        <div class="meta">Borrow: ${borrowPrice}</div>
-        <div class="meta">Purchase: ${buyPrice}</div>
-        
+        ${ document.body.getAttribute('data-user-type') === 'Admin' ? `<div class="meta-row">
+            <div class="meta">Stock: ${stock}</div>
+            <span class="meta-separator"></span>
+            <div class="meta">Count: ${count}</div>
+          </div>` 
+          : `<div class="meta-row">
+              <div class="meta">Borrow: ${borrowPrice}</div>
+              <span class="meta-separator"></span>
+              <div class="meta">Buy: ${buyPrice}</div>
+             </div>`}
         <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
                 ${
                     document.body.getAttribute('data-user-type') === 'Admin' ? `
                       <button class="profile-edit-btn" style="flex: 1; background-color:#4361ee ">Edit</button>
-                      <button class="profile-buy-btn" style="flex: 1; background-color: #ff5151">Delete</button>`
+                      <button class="profile-delete-btn" style="flex: 1; background-color: #ff5151">Delete</button>`
                         : `<button class="profile-borrow-btn" style="flex: 1; background-color: #4361ee">Borrow</button>
                           <button class="profile-buy-btn" style="flex: 1; background-color: #10b981">Buy</button>`}
         </div>
@@ -164,11 +172,18 @@ document.addEventListener("DOMContentLoaded", function () {
       const borrowBtn = profileBox.querySelector('.profile-borrow-btn');
       const buyBtn = profileBox.querySelector('.profile-buy-btn');
       const editBtn = profileBox.querySelector('.profile-edit-btn');
-      
+      const deleteBtn = profileBox.querySelector('.profile-delete-btn');
       // Find the original buttons on the book card
       const originalBorrowBtn = bookCard.querySelector('.borrow-btn');
       const originalBuyBtn = bookCard.querySelector('.buy-btn');
       const originalEditBtn = bookCard.querySelector('.edit-btn');
+      const originalDeleteBtn = bookCard.querySelector('.delete-btn');
+
+      if(deleteBtn && originalDeleteBtn){
+        deleteBtn.addEventListener('click', () => {
+          originalDeleteBtn.click();
+        });
+      }
 
       if(editBtn && originalEditBtn){
         editBtn.addEventListener('click', () => {

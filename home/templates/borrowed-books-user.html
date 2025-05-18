@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
   <link rel="stylesheet" href="{% static 'home/out-of-stock.css' %}">
 </head>
-<body data-logged-in="{{ is_logged_in|lower }}">
+<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
   <!-- Top Navbar -->
   <div class="navbar">
     <h2 class="logo">ReadIT</h2>
@@ -112,10 +112,10 @@
                     {% endif %}
                     <div class="action-buttons">
                       {% if userType == 'Customer' %}
-                      <a href="/home/return/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('return-form-{{ borrow.book.id }}').submit();">
+                      <a href="/home/return/{{ borrow.book.id }}">
                         <button class="return-btn">Return</button>
                       </a>
-                        <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
+                        <a href="/home/buy/{{ borrow.book.id }}">
                           <button class="buy-btn">Buy</button>
                         </a>
 
@@ -123,17 +123,11 @@
                         <a href="/home/edit/{{ borrow.book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
-                        <a href="/home/buy/{{ borrow.book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ borrow.book.id }}').submit();">
+                        <a href="/home/delete/{{ borrow.book.id }}">
                           <button class="delete-btn">Delete</button>
                         </a>
                       {% endif %}
                     </div>
-                    <form id="return-form-{{ borrow.book.id }}" action="/home/return/{{ borrow.book.id }}/" method="post" style="display: none;">
-                      {% csrf_token %}
-                    </form>
-                    <form id="buy-form-{{ borrow.book.id }}" action="{% url 'buyBook' borrow.book.id %}" method="post" style="display: none;">
-                      {% csrf_token %}
-                    </form>
                   </div>
                   <div class="book-card-content">
                     <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
@@ -159,6 +153,9 @@
                     </div>
                     <div class="book-prices">
                       <div class="book-price">Borrowed: {{ borrow.borrowed_date|date:"M d, Y" }}</div>
+                      <div class="stock" style="display: none">{{ borrow.book.stock }}</div>
+                      <div class="count" style="display: none">{{ borrow.book.count }}</div>
+
                     </div>
                     <div class="book-des" style="display: none;">{{ borrow.book.description|default:"No description available." }}</div>
                   </div>
@@ -217,6 +214,8 @@
                       <div class="book-price">Purchased: {{ owned.purchase_date|date:"M d, Y" }}</div>
                     </div>
                     <div class="book-des" style="display: none;">{{ owned.book.description|default:"No description available." }}</div>
+                    <div class="stock" style="display: none">{{ owned.book.stock }}</div>
+                    <div class="count" style="display: none">{{ owned.book.count }}</div>
                   </div>
                 </div>
               {% endfor %}

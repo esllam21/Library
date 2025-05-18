@@ -1,76 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
-
 <head>
-  <link rel="shortcut icon" type="x-icon" href="../assets/parthenon-svgrepo-com (1).svg">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Borrowed Books</title>
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
-  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-  <link rel="stylesheet" href="{% static 'home/borrowed-books.css' %}">
-  <link rel="stylesheet" href="{% static 'home/all.css' %}">
+  <title>Borrowed Books | BookBase</title>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'home/home.css' %}">
   <link rel="stylesheet" href="{% static 'home/sidebar.css' %}">
-
+  <link rel="stylesheet" href="{% static 'home/navbar.css' %}">
 </head>
-
-<body>
-  <div id="auth-section" class="profile-wrapper all">
-    {% if current_member and current_member.image %}
-      <div class="user-menu" id="user-menu">
-        <img src="{{ current_member.image.url }}" class="user-avatar" id="user-avatar">
-        <div class="dropdown-menu" id="dropdown-menu">
-          <a href="/home/profile/" class="test">My Profile</a>
-          <a href="/home/logout/" class="test">Logout</a>
+<body data-logged-in="{{ is_logged_in|lower }}" data-favorite-book-ids="{{ favorite_book_ids|join:',' }}" data-user-type="{{ userType }}">
+  <!-- Top Navbar -->
+  <div class="navbar">
+    <h2 class="logo">ReadIT</h2>
+    <button id="toggle-sidebar" class="sidebar-toggle-btn">☰</button>
+    <div class="search-input">
+      <input type="text" placeholder="Search your borrowed books...">
+    </div>
+    <div class="profile">
+      <span class="notification"><i class="ph ph-bell"></i></span>
+      {% if is_logged_in %}
+        <div class="user-profile">
+          <img src="{{ user_image }}" alt="{{ username }}">
+          <span class="username">{{ username }}</span>
         </div>
-      </div>
-    {% else %}
-      <a href="/home/login/" class="sign-in-link">Sign In</a>
-    {% endif %}
-  </div>
-  <div class="sidebar">
-    <a href="#" class="logo">
-      <div class="readit">
-        <span >readIt</span>
-      </div>
-    </a>
-    <ul class="side-menu">
-      <button class="sidebar-buttons home" id="home-btn">Home</button>
-      <button class="sidebar-buttons borrowed" id="borrowed-btn">Borrowd Books</button>
-      <button class="sidebar-buttons all-books" id="allBooks-btn">All Books</button>
-      <button class="sidebar-buttons darkMode">Dark / Light</button>
-    </ul>
-  </div>
-
-
-  <!--        <div class="main-dashboard">-->
-  <!--            <div class="recent-borrows"></div>-->
-  <h1 class="heading">
-    <span class="test">{{ current_member.username }}</span>
-  </h1>
-  <div class="main-dashboard">
-    <div class="recent-borrows" id="book-container">
-      {% if borrowed_books %}
-        {% for borrow in all_borrowed_books %}
-            {% if borrow.count > 0 %}
-              <div class="book-card">
-                <img src="{{ borrow.image.url }}" alt="{{ borrow.book.title }}" class="book-img">
-                <div class="book-info">
-                  <h3>{{ borrow.title }}</h3>
-                  <p><strong>Author:</strong> {{ borrow.author }}</p>
-                  <p><strong>Count:</strong> {{ borrow.count }}</p>
-                </div>
-              </div>
-            {% endif %}
-       {% endfor %}
-        <p>You haven't borrowed any books yet.</p>
+      {% else %}
+        <a href="{% url 'login' %}" class="sign-in-btn">
+          <i class="ph ph-sign-in"></i>
+          <span>Sign In</span>
+        </a>
       {% endif %}
     </div>
   </div>
-  <script src="{% static 'home/borrowed-books-admin.js' %}"></script>
-  <script src="{% static 'home/sidebar.js' %}"></script>
-</body>
 
+  <!-- Main Layout: Sidebar + Content + Profile Box -->
+  <div class="main-content-area">
+    <!-- Left: Sidebar -->
+    <div class="sidebar">
+      <ul>
+        <li id="home-btn">
+          <span class="icon-wrapper"><i class="ph ph-house"></i></span>
+          <span class="label">Discover</span>
+        </li>
+        <li id="categories-btn">
+          <span class="icon-wrapper"><i class="ph ph-notebook"></i></span>
+          <span class="label">Category</span>
+        </li>
+        <li class="active" id="borrowed-btn">
+          <span class="icon-wrapper"><i class="ph ph-book-open"></i></span>
+          <span class="label">My Library</span>
+        </li>
+        <li id="favourites-btn">
+          <span class="icon-wrapper"><i class="ph ph-heart"></i></span>
+          <span class="label">Favourites</span>
+        </li>
+        {% if userType == 'Admin' %}
+          <li id="addBook-btn">
+            <span class="icon-wrapper"><i class="ph ph-plus"></i></span>
+            <span class="label">Add Book</span>
+          </li>
+        {% endif %}
+
+        <div style="height: 20px;"></div>
+
+        <li id="settings-btn">
+          <span class="icon-wrapper"><i class="ph ph-gear"></i></span>
+          <span class="label">Settings</span>
+        </li>
+        <li id="support-btn">
+          <span class="icon-wrapper"><i class="ph ph-chat-teardrop-text"></i></span>
+          <span class="label">Support</span>
+        </li>
+        {% if is_logged_in %}
+          <li id="logout-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-out"></i></span>
+            <span class="label">Logout</span>
+          </li>
+        {% else %}
+          <li id="login-btn">
+            <span class="icon-wrapper"><i class="ph ph-sign-in"></i></span>
+            <span class="label">Sign in</span>
+        {% endif %}
+        <div style="height: 20px"></div>
+      </ul>
+    </div>
+
+    <!-- Middle: Main Content -->
+    <div class="content-wrapper">
+      <div class="main">
+        <div class="featured">
+          <div class="section-header">
+            <h3>{% if userType == 'Admin' %}All Borrowed & Owned Books{% else %}My Library{% endif %}</h3>
+          </div>
+
+          {% for member in member_data %}
+            {% if userType == 'Admin' %}
+              <div class="member-section" style="margin-bottom: 30px;">
+                <h4 style="color: #3b82f6; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                  <i class="ph ph-user" style="font-size: 18px;"></i>
+                  {{ member.member.first_name }} {{ member.member.last_name }} ({{ member.member.username }})
+                </h4>
+            {% endif %}
+
+            <!-- Borrowed Books Section -->
+            {% if member.borrowed_books %}
+              <div class="books-section" style="margin-bottom: 25px;">
+                <h5 style="color: #4361ee; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                  <i class="ph ph-book-bookmark" style="font-size: 16px;"></i>
+                  {% if userType == 'Admin' %}Currently Borrowed{% else %}My Borrowed Books{% endif %}
+                </h5>
+
+                <div class="books-row">
+                  {% for borrowed in member.borrowed_books %}
+                    <div class="book-card borrowed-status">
+                      <div class="book-card-img">
+                        <img src="{{ borrowed.book.image.url }}" alt="{{ borrowed.book.title }}">
+                        <div class="action-buttons">
+                          <a href="/home/return/{{ borrowed.book.id }}">
+                            <button class="return-btn">Return</button>
+                          </a>
+                          <a href="{% url 'buyBook' borrowed.book.id %}">
+                            <button class="buy-btn">Buy Now</button>
+                          </a>
+                        </div>
+                      </div>
+                      <div class="book-card-content">
+                        <span class="book-title">{{ borrowed.book.title }}</span>
+                        <div class="book-info">
+                          <span class="book-author">{{ borrowed.book.author }}</span>
+                          <div class="book-rating">
+                            <i class="ph ph-star-fill"></i>
+                            <span>{{ borrowed.book.rating|default:"N/A" }}</span>
+                          </div>
+                        </div>
+                        <div class="book-prices">
+                          <div class="book-price">Borrowed: ${{ borrowed.book.borrowPrice }}</div>
+                          <div class="buy-price">Buy: ${{ borrowed.book.buyPrice|default:borrowed.book.calculated_buy_price }}</div>
+                            <div class="book-id" style="display: none">{{ borrowed.book.id }}</div>
+                            <div class="stock" style="display: none">{{ borrowed.book.stock }}</div>
+                            <div class="count" style="display: none">{{ borrowed.book.count }}</div>
+                            <div class="book-des" style="display: none;">{{ borrowed.book.description|default:"No description available." }}</div>
+                        </div>
+                        <div class="borrowed-date" style="font-size: 11px; color: #6b7280; margin-top: 5px;">
+                          Borrowed on: {{ borrowed.borrowed_date|date:"M d, Y" }}
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            <!-- Owned Books Section -->
+            {% if member.owned_books %}
+              <div class="books-section">
+                <h5 style="color: #10b981; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                  <i class="ph ph-bookmark-simple" style="font-size: 16px;"></i>
+                  {% if userType == 'Admin' %}Owned Books{% else %}My Purchased Books{% endif %}
+                </h5>
+
+                <div class="books-row">
+                  {% for owned in member.owned_books %}
+                    <div class="book-card owned-status">
+                      <div class="book-card-img">
+                        <img src="{{ owned.book.get_image_url }}" alt="{{ owned.book.title }}">
+                        <div class="action-buttons">
+                          <span class="owned-badge" style="background-color: #10b981; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px;">Owned</span>
+                        </div>
+                      </div>
+                      <div class="book-card-content">
+                        <div class="book-title">{{ owned.book.title }}</div>
+                        <div class="book-info">
+                          <span class="book-author">{{ owned.book.author }}</span>
+                          <div class="book-rating">
+                            <i class="ph ph-star-fill"></i>
+                            <span>{{ owned.book.rating|default:"N/A" }}</span>
+                          </div>
+                        </div>
+                        <div class="purchase-date" style="font-size: 11px; color: #6b7280; margin-top: 5px;">
+                          Purchased on: {{ owned.purchase_date|date:"M d, Y" }}
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            {% if userType == 'Admin' %}</div>{% endif %}
+          {% empty %}
+            <div class="empty-state" style="padding: 40px 0;">
+              <i class="ph ph-book-open" style="font-size: 48px; color: #6b7280; margin-bottom: 15px;"></i>
+              <p>No borrowed or owned books found.</p>
+              <a href="{% url 'home' %}" class="btn-explore">Explore Books</a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Profile Box -->
+    <div class="profile-box"></div>
+  </div>
+
+  <script src="{% static 'home/home.js' %}"></script>
+  <script src="{% static 'home/sidebar.js' %}"></script>
+  <script src="{% static 'home/navbar.js' %}"></script>
+  <script>
+    // Make favorite book IDs available to JavaScript
+    window.favorite_book_ids = {{ favorite_book_ids|safe }};
+
+    // Highlight current page in sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('borrowed-btn').classList.add('active');
+    });
+  </script>
+</body>
 </html>

@@ -114,10 +114,10 @@
                     {% endif %}
                     <div class="action-buttons">
                       {% if userType == 'Customer' %}
-                        <a href="/home/borrow/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('borrow-form-{{ book.id }}').submit();">
+                        <a href="/home/borrow/{{ book.id }}">
                           <button class="borrow-btn">Borrow</button>
                         </a>
-                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
+                        <a href="/home/buy/{{ book.id }}">
                           <button class="buy-btn">Buy</button>
                         </a>
 
@@ -125,17 +125,11 @@
                         <a href="/home/edit/{{ book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
-                        <a href="/home/buy/{{ book.id }}/" onclick="event.preventDefault(); document.getElementById('buy-form-{{ book.id }}').submit();">
-                          <button class="buy-btn">Delete</button>
+                        <a href="/home/delete/{{ book.id }}">
+                          <button class="delete-btn">Delete</button>
                         </a>
                       {% endif %}
                     </div>
-                    <form id="borrow-form-{{ book.id }}" action="{% url 'borrowBook' book.id %}" method="post" style="display: none;">
-                      {% csrf_token %}
-                    </form>
-                    <form id="buy-form-{{ book.id }}" action="{% url 'buyBook' book.id %}" method="post" style="display: none;">
-                      {% csrf_token %}
-                    </form>
                   </div>
                   <div class="book-card-content">
                     <div style="justify-content: space-between !important; display: flex; align-items: center; margin-bottom: 10px;">
@@ -163,6 +157,8 @@
                       <div class="book-price">${{ book.borrowPrice }}</div>
                       <div class="buy-price">${{ book.buyPrice|default:book.calculated_buy_price }}</div>
                       <div class="book-id" style="display: none">{{ book.id }}</div>
+                      <div class="stock" style="display: none">{{ book.stock }}</div>
+                      <div class="count" style="display: none">{{ book.count }}</div>
                     </div>
                     <div class="book-des" style="display: none;">{{ book.description|default:"No description available." }}</div>
 

@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const settingsBtn = document.getElementById('settings-btn');
   const supportBtn = document.getElementById('support-btn');
   const loginBtn = document.getElementById('login-btn');
+  const addBookBtn = document.getElementById('addBook-btn');
+  if(addBookBtn){
+      addBookBtn.addEventListener('click',function(){
+          window.location.href="/home/addBooks/"
+      })
+  }
   if(loginBtn){
       loginBtn.addEventListener('click',function(){
           window.location.href="/home/login/"
@@ -47,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   if (borrowedBtn) {
       borrowedBtn.addEventListener('click', function () {
-          window.location.href = "/home/borrowedBooksUser/";
+          window.location.href = "/home/borrowedBooks/";
       });
   }
 

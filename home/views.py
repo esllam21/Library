@@ -1,9 +1,12 @@
+from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
+from django.core.exceptions import MultipleObjectsReturned
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.views.decorators.http import require_GET, require_POST
+from django.db import models
 from .models import Members, Books, BorrowedBook, Category, FavouriteBooks, OwnedBooks
 from collections import Counter
 from django.db.models import Count, Q
@@ -296,10 +299,8 @@ def signup(request):
         image=image
       )
       member.save()
-      messages.success(request, 'تم التسجيل بنجاح! ادخل على اللوجين.')
-      return redirect('login')  # غير دي حسب اسم صفحة اللوجين عندك
+      return redirect('login')
     except Exception as e:
-      messages.error(request, f'فيه مشكلة في التسجيل: {str(e)}')
       return render(request, 'signup.html')
 
   return render(request, 'signup.html')
@@ -390,6 +391,14 @@ def adminDashboard(request):
 def addBooks(request):
   # Get all categories for the form
   categories = Category.objects.all().order_by('name')
+  user_image = None
+  username = None
+  userType=None
+  user=None
+  user = Members.objects.get(email=request.session.get('user_email'))
+  userType = request.session.get('user_type')
+  user_image = user.image.url if user.image else '/static/images/default-user.png'
+  username = user.username
 
   if request.method == 'POST':
     # Get form data
@@ -402,6 +411,8 @@ def addBooks(request):
     category_id = request.POST.get('book_category')
     published = request.POST.get('published')
     image = request.FILES.get('image')
+    rating=request.POST.get('rating')
+    ratingCount=request.POST.get('ratingCount')
 
     # Create book (buyPrice will be auto-calculated in save() method)
     if title and author and borrowPrice and stock and category_id:
@@ -413,11 +424,13 @@ def addBooks(request):
           author=author,
           description=description,
           pageCount=pageCount if pageCount else 0,
-          borrowPrice=borrowPrice,
-          stock=stock,
+          borrowPrice=Decimal(borrowPrice),  # Convert to Decimal
+          stock=int(stock),
           book_category=category,
           category=category.name,  # For backwards compatibility
           published=published if published else None,
+          rating=rating,
+          ratingCount=ratingCount,
         )
 
         if image:
@@ -426,79 +439,102 @@ def addBooks(request):
         book.save()
 
         messages.success(request, f"Book '{title}' added successfully!")
-        return redirect('/home/availableBooks/')
+        return redirect('/home/homePage/')
       except Exception as e:
+        # Convert Decimal to string in error message
         messages.error(request, f"Error adding book: {str(e)}")
     else:
       messages.error(request, "Please fill all required fields")
 
   context = {
-    'categories': categories
+    'categories': categories,
+    'is_logged_in': request.session.get('is_logged_in', False),
+    'user_image': user_image,
+    'username': username,
+    'userType': userType,
+    'user':user,
   }
 
-  template = loader.get_template('add-books.html')
-  return HttpResponse(template.render(context, request))
-
+  return render(request, 'add-books.html', context)
 
 def unauthorized(request):
   return render(request, 'unauthorized.html')
 
 
 def returnBook(request, book_id):
-  if request.method == 'POST':
-    if request.session.get('is_logged_in'):
-      user_email = request.session.get('user_email')
-      member = get_object_or_404(Members, email=user_email)
-      book = get_object_or_404(Books, id=book_id)
+  if not request.session.get('is_logged_in'):
+    messages.error(request, "You need to be logged in to return books.")
+    return redirect('/home/login/')
 
-      # Find the borrowed book record
-      borrowed_book = get_object_or_404(BorrowedBook, member=member, book=book, returned=False)
+  try:
+    user_email = request.session.get('user_email')
+    member = get_object_or_404(Members, email=user_email)
+    book = get_object_or_404(Books, id=book_id)
 
-      # Mark as returned
-      borrowed_book.returned = True
-      borrowed_book.save()
+    # For admin users, find any active borrow of this book
+    if member.user_type == 'Admin':
+      borrowed_book = BorrowedBook.objects.filter(
+        book=book,
+        returned=False
+      ).first()
+    else:
+      # For regular users, only find their own borrows
+      borrowed_book = BorrowedBook.objects.filter(
+        member=member,
+        book=book,
+        returned=False
+      ).first()
 
-      # Increase the book count
-      book.count = (book.count or 0) - 1
-      book.stock += 1
-      book.save()
-
-      messages.success(request, f"You have successfully returned '{book.title}'.")
+    if not borrowed_book:
+      messages.error(request, "No active borrow record found for this book.")
       return redirect(request.META.get('HTTP_REFERER', '/home/borrowedBooks/'))
-    else:
-      return redirect('/home/login/')
-  return redirect(request.META.get('HTTP_REFERER', '/home/borrowedBooks/'))
 
+    # Mark as returned
+    borrowed_book.returned = True
+    borrowed_book.save()
 
+    # Update book stock and count
+    book.stock = models.F('stock') + 1
+    book.count = models.F('count') - 1
+    book.save(update_fields=['stock', 'count'])
+
+    messages.success(request, f"Successfully returned '{book.title}'")
+    if member.user_type == 'Admin':
+      messages.info(request, f"Returned on behalf of {borrowed_book.member.username}")
+
+    return redirect(request.META.get('HTTP_REFERER', '/home/borrowedBooks/'))
+
+  except Exception as e:
+    print(f"Error returning book: {e}")
+    messages.error(request, "An error occurred while processing your return.")
+    return redirect(request.META.get('HTTP_REFERER', '/home/borrowedBooks/'))
 def borrowBook(request, book_id):
-  if request.method == 'POST':
-    if request.session.get('is_logged_in'):
-      user_email = request.session.get('user_email')
-      member = get_object_or_404(Members, email=user_email)
-      book = get_object_or_404(Books, id=book_id)
-      borrowed_books = BorrowedBook.objects.filter(member=member, returned=False)
+  if request.session.get('is_logged_in'):
+    user_email = request.session.get('user_email')
+    member = get_object_or_404(Members, email=user_email)
+    book = get_object_or_404(Books, id=book_id)
+    borrowed_books = BorrowedBook.objects.filter(member=member, returned=False)
 
-      # Check if already borrowed
-      already_borrowed = BorrowedBook.objects.filter(member=member, book=book, returned=False).exists()
-      if not already_borrowed:
-        if book.stock > 0:
-          # Create borrowed book
-          BorrowedBook.objects.create(member=member, book=book)
+    # Check if already borrowed
+    already_borrowed = BorrowedBook.objects.filter(member=member, book=book, returned=False).exists()
+    if not already_borrowed:
+      if book.stock > 0:
+        # Create borrowed book
+        BorrowedBook.objects.create(member=member, book=book)
 
-          # Update count and stock
-          book.count = (book.count or 0) + 1
-          book.stock -= 1
-          book.save()
+        # Update count and stock
+        book.count = (book.count or 0) + 1
+        book.stock -= 1
+        book.save()
 
-          messages.success(request, f"You borrowed '{book.title}' successfully.")
-        else:
-          messages.error(request, f"Sorry, '{book.title}' is out of stock.")
+        messages.success(request, f"You borrowed '{book.title}' successfully.")
       else:
-        messages.warning(request, "You already borrowed this book.")
-      return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+        messages.error(request, f"Sorry, '{book.title}' is out of stock.")
     else:
-      return render(request, 'Home.html')
-  return redirect(request.META.get('HTTP_REFERER', '#'))
+      messages.warning(request, "You already borrowed this book.")
+    return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+  else:
+    return render(request, 'Home.html')
 
 
 
@@ -543,56 +579,54 @@ def search_books(request):
 
 
 def buyBook(request, book_id):
-  if request.method == 'POST':
-    if request.session.get('is_logged_in'):
-      user_email = request.session.get('user_email')
-      member = get_object_or_404(Members, email=user_email)
-      book = get_object_or_404(Books, id=book_id)
+  if request.session.get('is_logged_in'):
+    user_email = request.session.get('user_email')
+    member = get_object_or_404(Members, email=user_email)
+    book = get_object_or_404(Books, id=book_id)
 
-      # Check if already owned
-      already_owned = OwnedBooks.objects.filter(member=member, book=book).exists()
-      if already_owned:
-        messages.info(request, f"You already own '{book.title}'.")
-        return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
-
-      # Check if this is a purchase from borrowed books
-      borrowed_book = BorrowedBook.objects.filter(member=member, book=book, returned=False).first()
-
-      if borrowed_book:
-        # If buying a borrowed book, mark it as returned and create an owned record
-        borrowed_book.returned = True
-        borrowed_book.save()
-
-        # Create an OwnedBooks record for this purchase
-        OwnedBooks.objects.create(member=member, book=book)
-
-        # Note: We don't increase the count when buying a borrowed book
-        # We also don't decrease stock since the book was already borrowed
-
-        messages.success(request,
-                         f"You purchased '{book.title}' successfully for ${book.buyPrice or book.calculated_buy_price}.")
-
-      elif book.stock > 0:
-        # Regular purchase flow (not from borrowed books)
-        # Create an OwnedBooks record for this purchase
-        OwnedBooks.objects.create(member=member, book=book)
-        book.count = (book.count or 0) + 1
-        # Update stock
-        book.stock -= 1
-        book.save()
-
-        # In a real system, you would process payment
-        # For this demo, we'll just show a success message
-        messages.success(request,
-                         f"You purchased '{book.title}' successfully for ${book.buyPrice or book.calculated_buy_price}.")
-      else:
-        messages.error(request, f"Sorry, '{book.title}' is out of stock.")
-
-      # Redirect back to the page they came from
+    # Check if already owned
+    already_owned = OwnedBooks.objects.filter(member=member, book=book).exists()
+    if already_owned:
+      messages.info(request, f"You already own '{book.title}'.")
       return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+
+    # Check if this is a purchase from borrowed books
+    borrowed_book = BorrowedBook.objects.filter(member=member, book=book, returned=False).first()
+
+    if borrowed_book:
+      # If buying a borrowed book, mark it as returned and create an owned record
+      borrowed_book.returned = True
+      borrowed_book.save()
+
+      # Create an OwnedBooks record for this purchase
+      OwnedBooks.objects.create(member=member, book=book)
+
+      # Note: We don't increase the count when buying a borrowed book
+      # We also don't decrease stock since the book was already borrowed
+
+      messages.success(request,
+                       f"You purchased '{book.title}' successfully for ${book.buyPrice or book.calculated_buy_price}.")
+
+    elif book.stock > 0:
+      # Regular purchase flow (not from borrowed books)
+      # Create an OwnedBooks record for this purchase
+      OwnedBooks.objects.create(member=member, book=book)
+      book.count = (book.count or 0) + 1
+      # Update stock
+      book.stock -= 1
+      book.save()
+
+      # In a real system, you would process payment
+      # For this demo, we'll just show a success message
+      messages.success(request,
+                       f"You purchased '{book.title}' successfully for ${book.buyPrice or book.calculated_buy_price}.")
     else:
-      return redirect('/home/login/')
-  return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+      messages.error(request, f"Sorry, '{book.title}' is out of stock.")
+
+    # Redirect back to the page they came from
+    return redirect(request.META.get('HTTP_REFERER', '/home/homePage/'))
+  else:
+    return redirect('/home/login/')
 
 
 @require_POST
@@ -707,3 +741,69 @@ def edit_books(request, book_id):
         'userType': userType,
     })
 
+def delete_books(request, book_id):
+    book=Books.objects.get(id=book_id)
+    book.delete()
+    return redirect('homepage')
+
+
+def borrowed_books_view(request):
+  userType = None
+  user_image = None
+  username = None
+  user = None
+  favorite_book_ids = []
+
+  if request.session.get('is_logged_in'):
+    try:
+      user = Members.objects.get(email=request.session.get('user_email'))
+      user_image = user.image.url if user.image else '/static/images/default-user.png'
+      username = user.username
+      userType = user.user_type
+
+      # Get user's favorite books
+      favorite_book_ids = FavouriteBooks.objects.filter(member=user).values_list('book_id', flat=True)
+    except Members.DoesNotExist:
+      pass
+    except Exception as e:
+      print(f"Error getting user details: {e}")
+      # Continue with default values
+
+  # Initialize empty data structures
+  member_data = []
+
+  try:
+    if userType == 'Admin':
+      # For admin, get all members with their borrowed and owned books
+      members = Members.objects.all()
+      for member in members:
+        borrowed = BorrowedBook.objects.filter(member=member, returned=False)
+        owned = OwnedBooks.objects.filter(member=member)
+
+        member_data.append({
+          'member': member,
+          'borrowed_books': borrowed,
+          'owned_books': owned
+        })
+    else:
+      # For regular users, only get their own books
+      if user:  # Only if user is logged in
+        borrowed = BorrowedBook.objects.filter(member=user, returned=False)
+        owned = OwnedBooks.objects.filter(member=user)
+
+        member_data.append({
+          'member': user,
+          'borrowed_books': borrowed,
+          'owned_books': owned
+        })
+  except Exception as e:
+    print(f"Error fetching borrowed/owned books: {e}")
+
+  return render(request, 'borrowed-books-admin.html', {
+    'is_logged_in': request.session.get('is_logged_in', False),
+    'user_image': user_image,
+    'username': username,
+    'member_data': member_data,
+    'favorite_book_ids': list(favorite_book_ids),
+    'userType': userType,
+  })

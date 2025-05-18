@@ -9,7 +9,7 @@ urlpatterns = [
     path('logout/', views.Logout, name="logout"),
     path('signup/', views.signup, name="signup"),
     path('addBooks/', views.addBooks, name="addBook"),
-    path('borrowedBooksAdmin/', views.borrowedBooksAdmin, name="borrowBookAdmin"),
+    path('borrowedBooks/', views.borrowed_books_view, name="borrowBookAdmin"),
     path('borrowedBooksUser/', views.borrowedBooksUser, name='borrowedBooks'),
     path('adminDashboard/', views.adminDashboard, name="adminDashboard"),
     path('unauthorized/', views.unauthorized, name="unauthorized"),
@@ -20,6 +20,7 @@ urlpatterns = [
     path('favorites/', views.getFavoriteBooks, name='favorites'),
     path('search/', views.search_books, name='search_books'),
     path('categories/', views.categoriesPage, name='categories'),
-    path('edit/<int:book_id>', views.edit_books, name='editBook'),
+    path('edit/<int:book_id>/', views.edit_books, name='editBook'),
+    path('delete/<int:book_id>/', views.delete_books, name='deleteBook'),
 
 ]
