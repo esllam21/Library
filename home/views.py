@@ -42,7 +42,7 @@ def categoriesPage(request):
       userType = user.user_type
       # Get borrowed and owned books using the Members instance, not request.user
       borrowed_book_ids = BorrowedBook.objects.filter(
-        member=user  # Changed from request.user to user
+        member=user, returned=False # Changed from request.user to user
       ).values_list('book_id', flat=True)
 
       owned_book_ids = OwnedBooks.objects.filter(
@@ -201,6 +201,8 @@ def homePage(request):
   user = None
   recommended_books = []
   favorite_book_ids = []
+  borrowed_book_ids=[]
+  owned_book_ids=[]
 
   if request.session.get('is_logged_in'):
     try:
@@ -209,9 +211,7 @@ def homePage(request):
       username = user.username
       userType= user.user_type
       # Get borrowed and owned books using the Members instance, not request.user
-      borrowed_book_ids = BorrowedBook.objects.filter(
-        member=user  # Changed from request.user to user
-      ).values_list('book_id', flat=True)
+      borrowed_book_ids = BorrowedBook.objects.filter(returned=False, member=user).values_list('book_id', flat=True)
 
       owned_book_ids = OwnedBooks.objects.filter(
         member=user  # Changed from request.user to user
@@ -536,7 +536,7 @@ def search_books(request):
       stock=request.session.get('stock')
       # Get borrowed and owned books using the Members instance, not request.user
       borrowed_book_ids = BorrowedBook.objects.filter(
-        member=user  # Changed from request.user to user
+        member=user, returned=False  # Changed from request.user to user
       ).values_list('book_id', flat=True)
 
       owned_book_ids = OwnedBooks.objects.filter(
@@ -661,7 +661,7 @@ def getFavoriteBooks(request):
 
     # Get borrowed and owned books using the Members instance, not request.user
     borrowed_book_ids = BorrowedBook.objects.filter(
-      member=user  # Changed from request.user to user
+      member=user, returned=False  # Changed from request.user to user
     ).values_list('book_id', flat=True)
 
     owned_book_ids = OwnedBooks.objects.filter(
