@@ -129,7 +129,6 @@
                         <a href="/home/buy/{{ book.id }}">
                           <button class="buy-btn">Buy</button>
                         </a>
-
                       {% else %}
                         <a href="/home/edit/{{ book.id }}">
                           <button class="edit-btn">Edit</button>
@@ -213,7 +212,7 @@
                         <a href="/home/buy/{{ book.id }}">
                           <button class="buy-btn">Buy</button>
                         </a>
-                      {% else %}
+                      {% elif userType == 'Admin' %}
                         <a href="/home/edit/{{ book.id }}">
                           <button class="edit-btn">Edit</button>
                         </a>
@@ -273,9 +272,6 @@
         </div>
         </div>
       </div>
-                
-
-
     <div class="profile-box"></div>
   </div>
 

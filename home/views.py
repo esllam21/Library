@@ -17,6 +17,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
 
+
 def categoriesPage(request):
   categories = Category.objects.annotate(
     book_count=Count('books')

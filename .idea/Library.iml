@@ -14,7 +14,7 @@
   </component>
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at D:\Uni\Level 3\Second Term\Web\20226013-3-Laila\env (2)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13 virtualenv at D:\Uni\Level 3\Second Term\Web\env" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="@phosphor-icons" level="application" />
   </component>
